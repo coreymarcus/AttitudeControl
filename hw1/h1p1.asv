@@ -1,0 +1,17 @@
+%% Setup
+clear
+close all
+clc
+
+addpath("..\util\")
+
+%% Problem Initalization
+
+% Rotation formulations
+J = blkdiag(250, 300, 500); % Inertia matrix
+w_b_0 = [1 2 3]'; % Initial rotation rate, deg/sec
+q_inertial2body_0 = [0 0 0 1]'; % Initial attitude quaternion
+
+% Orbital elements
+a = 6371 + 500;
+e = 1
