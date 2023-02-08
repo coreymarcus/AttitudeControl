@@ -23,6 +23,9 @@ theta = 0;
 % Final time
 Tf = 6000;
 
+% Controller gain
+K_control = 1;
+
 %% Main
 
 % Convert OE
@@ -44,7 +47,10 @@ state_hist(11:13,1) = w_b_0;
 
 % Propagate
 for ii = 2:Nt
-    state_f = PropagateTwoBody(state_hist(:,ii - 1), dt, J, zeros(3,1));
+    % Find control torque
+    T = BdotController(K_control,state_hist(1:3,ii - 1),state_hist(7:10,ii-1), state_hist(11:13,ii - 1));
+
+    state_f = PropagateTwoBody(state_hist(:,ii - 1), dt, J, T);
     state_hist(:,ii) = state_f;
 end
 
