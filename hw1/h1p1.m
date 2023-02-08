@@ -32,7 +32,7 @@ K_control = 1;
 [r_inertial, v_inertial] = OE2State(a, e, i, Ohm, w, theta);
 
 % Propagation timestep
-dt = 1;
+dt = 10;
 
 % Time vector
 t = 0:dt:Tf;
