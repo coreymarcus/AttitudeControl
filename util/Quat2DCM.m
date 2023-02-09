@@ -5,7 +5,6 @@ function T = Quat2DCM(q)
 [theta, n] = Quat2AxisAngle(q);
 
 % Convert to transformation matrix
-nx = CrossProductMat(n);
-T = eye(3) + sin(theta)*nx + (1 - cos(theta))*nx*nx;
+T = AxisAngle2DCM(theta,n);
 
 end
