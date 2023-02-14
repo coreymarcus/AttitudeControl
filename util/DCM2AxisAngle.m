@@ -6,6 +6,13 @@ function [theta,n] = DCM2AxisAngle(T)
 lambdas = diag(D);
 targ = lambdas == 1;
 
+% Check for no rotation
+if(sum(targ) == 3)
+    theta = 0;
+    n = [1 0 0]';
+    return;
+end
+
 % Make sure we've found a correct eigenvalue
 if(sum(targ) ~= 1)
     error("No unity eigenvalue found.")
