@@ -1,3 +1,5 @@
 
 *.asv
 *.avi
+*.slxc
+/hw2/slprj/*

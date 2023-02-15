@@ -7,7 +7,7 @@ addpath("..\util\")
 
 %% Problem Initalization
 
-createmovie = true;
+createmovie = false;
 
 % Rotation formulations
 J = blkdiag(100, 75, 50); % Inertia matrix
@@ -78,9 +78,9 @@ figure;
 
 % Propagate
 for ii = 2:Nt
-    state_f1 = PropagateTwoBody(state_hist1(:,ii - 1), dt, J, [0 0 0]');
-    state_f2 = PropagateTwoBody(state_hist2(:,ii - 1), dt, J, [0 0 0]');
-    state_f3 = PropagateTwoBody(state_hist3(:,ii - 1), dt, J, [0 0 0]');
+    state_f1 = PropagateTwoBody(state_hist1(:,ii - 1), dt, J, [0 0 0]','TwoBody');
+    state_f2 = PropagateTwoBody(state_hist2(:,ii - 1), dt, J, [0 0 0]','TwoBody');
+    state_f3 = PropagateTwoBody(state_hist3(:,ii - 1), dt, J, [0 0 0]','TwoBody');
     state_hist1(:,ii) = state_f1;
     state_hist2(:,ii) = state_f2;
     state_hist3(:,ii) = state_f3;

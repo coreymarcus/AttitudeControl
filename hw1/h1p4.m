@@ -26,7 +26,7 @@ orbit_rate = sqrt(mu/norm(r_inertial)^3); % Orbit rate, AKA mean motion
 
 % Rotational stuff
 J = blkdiag(90,70,60);
-w_b_0 = [0.0001 0.0001 orbit_rate]'; % Initial rotation rate, rad/sec
+w_b_0 = [pi*0.0001/180 pi*0.0001/180 orbit_rate]'; % Initial rotation rate, rad/sec
 
 % Body axes in inertial frame
 b_x_in_i = v_inertial/norm(v_inertial);
