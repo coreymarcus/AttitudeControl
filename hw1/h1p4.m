@@ -41,8 +41,6 @@ T_body2inertial0 = [b_x_in_i';
     b_z_in_i'];
 q_body2inertial_0 = DCM2Quat(T_body2inertial0);
 q_inertial2body_0 = QuatInv(q_body2inertial_0);
-q_inertial2body_0 = [.5 .5 .5 1]';
-q_inertial2body_0 = q_inertial2body_0/norm(q_inertial2body_0);
 
 % Propagation timestep
 dt = 100;
