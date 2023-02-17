@@ -88,21 +88,35 @@ At this point, note two things; $J_1 = J_3$ and $\bar{\omega}_1 = \bar{\omega}_3
 We can define $k_1 = \frac{J_2 - J_3}{J_1}$ and $k_3 = \frac{J_1 - J_2}{J_3}$. Then the free response of $\delta \omega$ is given as the following.
 \begin{align}
 	\delta \omega_1 (t) & = \delta \omega_1(0) \cos(\Omega t) + \frac{\delta \dot{\omega}_1 (0)}{\Omega} \sin(\Omega t) \\
-	\delta \omega_3 (t) & = \delta \omega_3(0) \cos(\Omega t) + \frac{\delta \dot{\omega}_3 (0)}{\Omega} \sin(\Omega t) 
+	\delta \omega_3 (t) & = \delta \omega_3(0) \cos(\Omega t) + \frac{\delta \dot{\omega}_3 (0)}{\Omega} \sin(\Omega t) \\
+	\Omega^2 & = k_1 k_3 \bar{\omega}_2^2
 \end{align}
 
-We must also consider the forced response due to a non-zero $\delta \tau_1$. Assume a solution of the following form.
+We can make a clever substitution.
 \begin{align}
-	\delta \omega_1 (t) & = A_1 t + A_2 \sin(\Omega t) + A_3 \cos(\Omega t) \\
-	\delta \omega_3 (t) & = B_1 t + B_2 \sin(\Omega t) + B_3 \cos(\Omega t)
+	\frac{\delta \dot{\omega}_1 (0)}{\Omega} & = \frac{\bar{\omega}_2 k_1 \delta \omega_3(0)}{\sqrt{k_1 k_3} \bar{\omega}_2} \\
+	& = \sqrt{\frac{k_1}{k_3}}\delta \omega_3(0) \\
+	\frac{\delta \dot{\omega}_3 (0)}{\Omega} & = \frac{\bar{\omega}_2 k_3 \delta \omega_1(0)}{\sqrt{k_1 k_3} \bar{\omega}_2} \\
+	& = \sqrt{\frac{k_3}{k_1}}\delta \omega_1(0)
 \end{align}
 
-Differentiate and plug into the equations of motion.
+And now we have an STM.
+\begin{equation}
+	\begin{bmatrix}
+	\delta \omega_1 (t) \\
+	\delta \omega_3 (t)
+	\end{bmatrix} = \begin{bmatrix}
+	\cos(\Omega t) & \sqrt{\frac{k_1}{k_3}} \sin(\Omega t) \\
+	\sqrt{\frac{k_3}{k_1}} \sin(\Omega t) & \cos(\Omega t) \\
+	\end{bmatrix} \begin{bmatrix}
+	\delta \omega_1 (0) \\
+	\delta \omega_3 (0)
+	\end{bmatrix}
+\end{equation}
+
+We know we have a constant input torque and the general solution for $\delta \omega$ is provided by the following. Some steps have been skipped, this is not the general solution. Will need to come back later.
 \begin{align}
-A_1 + A_2 \Omega \cos(\Omega t) - A_3 \Omega \sin (\Omega t) & = \bar{\omega_2} k_1 \delta \omega_3(t) + \delta \tau_1 \\
-A_1 + A_2 \Omega \cos(\Omega t) - A_3 \Omega \sin (\Omega t) & = \bar{\omega_2} k_1 \left( B_1 t + B_2 \sin(\Omega t) + B_3 \cos(\Omega t) \right) + \delta \tau_1 \\
-B_1 + B_2 \Omega \cos(\Omega t) - B_3 \Omega \sin (\Omega t) & = \bar{\omega_2} k_3 \delta \omega_1(t) \\
-B_1 + B_2 \Omega \cos(\Omega t) - B_3 \Omega \sin (\Omega t) & = \bar{\omega_2} k_3 \left( A_1 t + A_2 \sin(\Omega t) + A_3 \cos(\Omega t) \right)
+	\delta \omega (t) & = \int_{0}^{t} \Phi(t,\sigma) \delta \tau d \sigma
 \end{align}
 
 \end{document}
