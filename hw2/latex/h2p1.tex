@@ -1,5 +1,8 @@
 \documentclass[]{article}
 
+\usepackage{parskip,amsmath}
+\usepackage[margin=0.5in]{geometry}
+
 %opening
 \title{Homework 2 Problem 1}
 \author{Corey Marcus}
@@ -8,6 +11,98 @@
 
 \maketitle
 
-\section{}
+\newcommand{\CrossProd}[1]{\left[ #1 \times \right]}
+
+\section{Prompt}
+
+Derive the linearized equations of perturbed motion of an axial symmetric satellite spinning around its major axis of inertial $J_2 > J_1 = J3$. Assume a constant perturbation torque acting on the spacecraft.
+
+\section{Answer}
+
+We begin with the equation governing motion:
+\begin{equation}
+	J \dot{\omega} = -\omega \times J \omega + \tau
+\end{equation}
+$\omega$ is the rotation rate with respect to inertial in the body frame. $J$ is the inertia matrix in the body frame. $\tau$ is the input torque in the body frame.
+
+We introduce nominal $\bar{\cdot}$ and perturbation $\delta \cdot $ components.
+\begin{equation}
+	J \left(\dot{\bar{\omega}} + \delta \dot{\omega} \right) = -\left(\bar{\omega} + \delta \omega \right) \times J \left(\bar{\omega} + \delta \omega \right) + \left(\bar{\tau} + \delta \tau \right)
+\end{equation}
+
+We will expand the right side.
+\begin{align}
+	J \left(\dot{\bar{\omega}} + \delta \dot{\omega} \right) & = -\left(\bar{\omega} + \delta \omega \right) \times J \left(\bar{\omega} + \delta \omega \right) + \left(\bar{\tau} + \delta \tau \right) \\
+	& = -\left(\bar{\omega} + \delta \omega \right) \times \left(J\bar{\omega} + J \delta \omega \right) + \left(\bar{\tau} + \delta \tau \right) \\
+	& = -\left(\bar{\omega} + \delta \omega \right) \times J\bar{\omega} -\left(\bar{\omega} + \delta \omega \right) \times J \delta \omega + \left(\bar{\tau} + \delta \tau \right) \\
+	& = -\left(\bar{\omega}  \times J\bar{\omega} + \delta \omega  \times J\bar{\omega} \right) -\left(\bar{\omega} \times J \delta \omega + \delta \omega \times J \delta \omega \right)  + \left(\bar{\tau} + \delta \tau \right) \\
+	& = -\left(\bar{\omega}  \times J\bar{\omega} + \delta \omega  \times J\bar{\omega} \right) -\left(\bar{\omega} \times J \delta \omega + \delta \omega \times J \delta \omega \right)  + \left(\bar{\tau} + \delta \tau \right)
+\end{align}
+We can eliminate the nominal's evolution with the governing equation.
+\begin{align}
+	 & = -\left( \delta \omega  \times J\bar{\omega} \right) -\left(\bar{\omega} \times J \delta \omega + \delta \omega \times J \delta \omega \right)  + \delta \tau \\
+	& = J \bar{\omega} \times \delta \omega -\left(\bar{\omega} \times J \delta \omega + \delta \omega \times J \delta \omega \right)  + \delta \tau \\
+	& = \CrossProd{J \bar{\omega}} \delta \omega -\left(\CrossProd{\bar{\omega}} J \delta \omega + \delta \omega \times J \delta \omega \right)  + \delta \tau \\
+	& = \left( \CrossProd{J \bar{\omega}} - \CrossProd{\bar{\omega}} J \right) \delta \omega + \delta \omega \times J \delta \omega  + \delta \tau
+\end{align}
+
+Then we linearize the peturbations about the nominal, ($\delta \omega = 0$).
+\begin{align}
+	J \delta \dot{\omega} & \approx \left. \frac{d J \delta \dot{\omega}}{d \delta \omega} \right|_{\delta \omega = 0} \delta \omega  + \delta \tau \\
+	& \approx \left( \CrossProd{J \bar{\omega}} - \CrossProd{\bar{\omega}} J \right) \delta \omega + \delta \tau
+\end{align}
+
+I don't know how to linearize $\delta \omega \times J \delta \omega$ but matlab symbolic toolbox tells me that when it is linearized and evaluated at $\delta \omega = 0$, it becomes zero.
+
+We will now drop the approximate sign for convenience. But note that the approximation is still present.
+\begin{align}
+	\delta \dot{\omega} & = \begin{bmatrix}
+	J_1^{-1} & 0 & 0 \\
+	0 & J_2^{-1} & 0 \\
+	0 & 0 & J_3^{-1}
+	\end{bmatrix} \left( \CrossProd{J \bar{\omega}} - \CrossProd{\bar{\omega}} J \right) \delta \omega + \delta \tau \\
+	& = \begin{bmatrix}
+	0 & \frac{\bar{\omega}_3(J_2 - J_3)}{J_1} & \frac{\bar{\omega}_2(J_2 - J_3)}{J_1} \\
+	-\frac{\bar{\omega}_3(J_1 - J_3)}{J_2} & 0 & -\frac{\bar{\omega}_1(J_1 - J_3)}{J_2} \\
+	\frac{\bar{\omega}_2(J_1 - J_2)}{J_3} & \frac{\bar{\omega}_1(J_1 - J_2)}{J_3} & 0
+	\end{bmatrix} \delta \omega + \delta \tau
+\end{align}
+At this point, note two things; $J_1 = J_3$ and $\bar{\omega}_1 = \bar{\omega}_3 = 0$.
+\begin{align}
+\delta \dot{\omega} & = \begin{bmatrix}
+0 & 0 & \frac{\bar{\omega}_2(J_2 - J_3)}{J_1} \\
+0 & 0 & 0 \\
+\frac{\bar{\omega}_2(J_1 - J_2)}{J_3} & 0 & 0
+\end{bmatrix} \delta \omega + \delta \tau \\
+\begin{bmatrix}
+\delta \dot{\omega}_1 \\
+\delta \dot{\omega}_2 \\
+\delta \dot{\omega}_3
+\end{bmatrix} & = \begin{bmatrix}
+\frac{\bar{\omega}_2(J_2 - J_3)}{J_1} \delta \omega_3 \\
+0 \\
+\frac{\bar{\omega}_2(J_1 - J_2)}{J_3} \delta \omega_1
+\end{bmatrix} + \delta \tau
+\end{align}
+
+We can define $k_1 = \frac{J_2 - J_3}{J_1}$ and $k_3 = \frac{J_1 - J_2}{J_3}$. Then the free response of $\delta \omega$ is given as the following.
+\begin{align}
+	\delta \omega_1 (t) & = \delta \omega_1(0) \cos(\Omega t) + \frac{\delta \dot{\omega}_1 (0)}{\Omega} \sin(\Omega t) \\
+	\delta \omega_3 (t) & = \delta \omega_3(0) \cos(\Omega t) + \frac{\delta \dot{\omega}_3 (0)}{\Omega} \sin(\Omega t) 
+\end{align}
+
+We must also consider the forced response due to a non-zero $\delta \tau_1$. Assume a solution of the following form.
+\begin{align}
+	\delta \omega_1 (t) & = A_1 t + A_2 \sin(\Omega t) + A_3 \cos(\Omega t) \\
+	\delta \omega_3 (t) & = B_1 t + B_2 \sin(\Omega t) + B_3 \cos(\Omega t)
+\end{align}
+
+Differentiate and plug into the equations of motion.
+\begin{align}
+A_1 + A_2 \Omega \cos(\Omega t) - A_3 \Omega \sin (\Omega t) & = \bar{\omega_2} k_1 \delta \omega_3(t) + \delta \tau_1 \\
+A_1 + A_2 \Omega \cos(\Omega t) - A_3 \Omega \sin (\Omega t) & = \bar{\omega_2} k_1 \left( B_1 t + B_2 \sin(\Omega t) + B_3 \cos(\Omega t) \right) + \delta \tau_1 \\
+B_1 + B_2 \Omega \cos(\Omega t) - B_3 \Omega \sin (\Omega t) & = \bar{\omega_2} k_3 \delta \omega_1(t) \\
+B_1 + B_2 \Omega \cos(\Omega t) - B_3 \Omega \sin (\Omega t) & = \bar{\omega_2} k_3 \left( A_1 t + A_2 \sin(\Omega t) + A_3 \cos(\Omega t) \right)
+\end{align}
 
 \end{document}
