@@ -3,3 +3,6 @@
 *.avi
 *.slxc
 /hw2/slprj/*
+*.aux
+*.log
+*.gz

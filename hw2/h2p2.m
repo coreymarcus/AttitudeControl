@@ -38,7 +38,7 @@ w_b_0(3) = n;
 [r_inertial_0, v_inertial_0] = OE2State(a, e, i, Ohm, w, theta);
 
 % Run simulation
-out = sim("h2p2_sim");
+out = sim("simulink/h2p2_sim");
 
 %% Extract information
 r_inertial_hist = squeeze(out.pos);
