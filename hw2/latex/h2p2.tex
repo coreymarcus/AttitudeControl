@@ -12,6 +12,7 @@
 \maketitle
 
 \newcommand{\CrossProd}[1]{\left[ #1 \times \right]}
+\newcommand{\VecToQuat}[1]{\begin{bmatrix} #1 \\ 0 \end{bmatrix}}
 
 \section{Prompt}
 
@@ -19,5 +20,26 @@ Derive a controller which regulates the tumbling motion of a satellite with grav
 
 \section{Answer}
 
+In the previous problem we linearized $\delta \omega$. In this problem we will need to linearize $\delta \theta$ as well.
+We also need to account for a misalignment between our actual and desired body frame when talking about our desired body rates.
+\begin{equation}
+	\delta \omega = \omega^{b} - \bar{\omega}^{\bar{b}} = \omega^b - T^{b}_{\bar{b}} \bar{\omega}^{\bar{b}}
+\end{equation}
+
+We will have an error quaternion from the nominal frame to the actual frame
+\begin{equation}
+	\delta q_{\bar{b}}^b = q \otimes \bar{q}^*
+\end{equation}
+
+The quaternion evolves according to
+\begin{equation}
+	\dot{q} = \frac{1}{2} \VecToQuat{\omega}  \otimes q
+\end{equation}
+
+The error quaternion evolves as
+\begin{equation}
+	\delta \dot{q} = \frac{1}{2} \VecToQuat{\bar{\omega}} \otimes \delta q - \frac{1}{2} \delta q \otimes \VecToQuat{\bar{\omega}} + \frac{1}{2} \VecToQuat{\delta \omega} \otimes \delta q
+\end{equation}
+Note: This step is a little uncertain to me, maybe need to review the steps for differentiation of the cross product. It looks like the product rule holds for cross products so that is the likely avenue for success.
 
 \end{document}

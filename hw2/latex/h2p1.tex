@@ -110,10 +110,10 @@ It looks like Renato either had a mistake in his class notes, or I had a mistake
 
 We can make a clever substitution.
 \begin{align}
-	\frac{\delta \dot{\omega}_1 (0)}{\Omega} & = \frac{\bar{\omega}_2 k_1 \delta \omega_3(0)}{\sqrt{k_1 k_3} \bar{\omega}_2} \\
-	& = \sqrt{\frac{k_1}{k_3}}\delta \omega_3(0) \\
-	\frac{\delta \dot{\omega}_3 (0)}{\Omega} & = \frac{\bar{\omega}_2 k_3 \delta \omega_1(0)}{\sqrt{k_1 k_3} \bar{\omega}_2} \\
-	& = \sqrt{\frac{k_3}{k_1}}\delta \omega_1(0)
+	\frac{\delta \dot{\omega}_1 (0)}{\Omega} & = \frac{\bar{\omega}_2 k_1 \delta \omega_3(0)}{\sqrt{-k_1 k_3} \bar{\omega}_2} \\
+	& = \sqrt{-\frac{k_1}{k_3}}\delta \omega_3(0) \\
+	\frac{\delta \dot{\omega}_3 (0)}{\Omega} & = \frac{\bar{\omega}_2 k_3 \delta \omega_1(0)}{\sqrt{-k_1 k_3} \bar{\omega}_2} \\
+	& = \sqrt{-\frac{k_3}{k_1}}\delta \omega_1(0)
 \end{align}
 
 And now we have an STM.
@@ -122,8 +122,8 @@ And now we have an STM.
 	\delta \omega_1 (t) \\
 	\delta \omega_3 (t)
 	\end{bmatrix} = \begin{bmatrix}
-	\cos(\Omega t) & \sqrt{\frac{k_1}{k_3}} \sin(\Omega t) \\
-	\sqrt{\frac{k_3}{k_1}} \sin(\Omega t) & \cos(\Omega t) \\
+	\cos(\Omega t) & \sqrt{-\frac{k_1}{k_3}} \sin(\Omega t) \\
+	\sqrt{-\frac{k_3}{k_1}} \sin(\Omega t) & \cos(\Omega t) \\
 	\end{bmatrix} \begin{bmatrix}
 	\delta \omega_1 (0) \\
 	\delta \omega_3 (0)
