@@ -92,6 +92,22 @@ We can define $k_1 = \frac{J_2 - J_3}{J_1}$ and $k_3 = \frac{J_1 - J_2}{J_3}$. T
 	\Omega^2 & = k_1 k_3 \bar{\omega}_2^2
 \end{align}
 
+I think there could be an error in the above formulation. Try to take the derivative and plug it back in to the equations of motion.
+\begin{align}
+	\delta \dot{\omega}_1(t) & = - \delta \omega_1(0) \Omega \sin(\Omega t) +  \delta \dot{\omega}_1 (0) \cos(\Omega t) \\
+	\bar{\omega}_2 k_1 \delta \omega_3 (t) & = - \delta \omega_1(0) \Omega \sin(\Omega t) + \delta \dot{\omega}_1 (0) \cos(\Omega t) \\
+	\bar{\omega}_2 k_1 \left( \delta \omega_3(0) \cos(\Omega t) + \frac{\delta \dot{\omega}_3 (0)}{\Omega} \sin(\Omega t) \right) & = - \delta \omega_1(0) \Omega \sin(\Omega t) +  \delta \dot{\omega}_1 (0) \cos(\Omega t) \\
+\end{align}
+We know that $\delta \dot{\omega}_1(0) = \bar{\omega}_2 k_1 \delta \omega_3(0)$ and $\delta \dot{\omega}_3(0) = \bar{\omega}_2 k_3 \delta \omega_1(0)$.
+\begin{align}
+	\bar{\omega}_2 k_1 \left( \delta \omega_3(0) \cos(\Omega t) + \frac{\delta \dot{\omega}_3 (0)}{\Omega} \sin(\Omega t) \right) & = - \delta \omega_1(0) \Omega \sin(\Omega t) +  \delta \dot{\omega}_1 (0) \cos(\Omega t) \\
+	\bar{\omega}_2 k_1 \left( \delta \omega_3(0) \cos(\Omega t) + \frac{\bar{\omega}_2 k_3 \delta \omega_1(0)}{\Omega} \sin(\Omega t) \right) & = - \delta \omega_1(0) \Omega \sin(\Omega t) +  \bar{\omega}_2 k_1 \delta \omega_3(0) \cos(\Omega t) \\
+	\text{cos terms: } \bar{\omega}_2 k_1 \delta \omega_3(0) & = \bar{\omega}_2 k_1 \delta \omega_3(0) \\
+	\text{sin terms: } \bar{\omega}_2 k_1 \frac{\bar{\omega}_2 k_3 \delta \omega_1(0)}{\Omega} & = - \delta \omega_1(0) \Omega \\
+	\bar{\omega}_2^2 k_1 k_2 & = -\Omega^2
+\end{align}
+It looks like Renato either had a mistake in his class notes, or I had a mistake in my copying.
+
 We can make a clever substitution.
 \begin{align}
 	\frac{\delta \dot{\omega}_1 (0)}{\Omega} & = \frac{\bar{\omega}_2 k_1 \delta \omega_3(0)}{\sqrt{k_1 k_3} \bar{\omega}_2} \\
@@ -114,9 +130,30 @@ And now we have an STM.
 	\end{bmatrix}
 \end{equation}
 
-We know we have a constant input torque and the general solution for $\delta \omega$ is provided by the following. Some steps have been skipped, this is not the general solution. Will need to come back later.
+We need to find the particular solution. For linear systems this is an integral. We know that our input torque is constant, so it falls out.
 \begin{align}
-	\delta \omega (t) & = \int_{0}^{t} \Phi(t,\sigma) \delta \tau d \sigma
+	\delta \omega (t) & = \int_{0}^{t} \Phi(t,\sigma) J^{-1} \delta \tau d \sigma \\
+	\delta \omega (t) & = \int_{0}^{t} \begin{bmatrix}
+	\cos(\Omega (t - \sigma)) & \sqrt{\frac{k_1}{k_3}} \sin(\Omega (t - \sigma)) \\
+	\sqrt{\frac{k_3}{k_1}} \sin(\Omega (t - \sigma)) & \cos(\Omega (t - \sigma)) \\
+	\end{bmatrix} d \sigma J^{-1} \delta \tau \\
+	\delta \omega (t) & = \left. \begin{bmatrix}
+	-\frac{1}{\Omega}\sin(\Omega (t - \sigma)) & \sqrt{\frac{k_1}{k_3}} \frac{1}{\Omega} \cos(\Omega (t - \sigma)) \\
+	\sqrt{\frac{k_3}{k_1}} \frac{1}{\Sigma} \cos(\Omega (t - \sigma)) & -\frac{1}{\Omega} \sin(\Omega (t - \sigma)) \\
+	\end{bmatrix} \right|_{\sigma = 0}^{\sigma = t} J^{-1} \delta \tau \\
+	\delta \omega (t) & = \frac{1}{\Omega} \left. \begin{bmatrix}
+	-\sin(\Omega (t - \sigma)) & \sqrt{\frac{k_1}{k_3}} \cos(\Omega (t - \sigma)) \\
+	\sqrt{\frac{k_3}{k_1}} \cos(\Omega (t - \sigma)) & - \sin(\Omega (t - \sigma)) \\
+	\end{bmatrix} \right|_{\sigma = 0}^{\sigma = t} J^{-1} \delta \tau \\
+	\delta \omega (t) & = \frac{1}{\Omega} \left( \begin{bmatrix}
+	0 & 1 \\
+	1 & 0 \\
+	\end{bmatrix} - \begin{bmatrix}
+	-\sin(\Omega t) & \sqrt{\frac{k_1}{k_3}} \cos(\Omega t) \\
+	\sqrt{\frac{k_3}{k_1}} \cos(\Omega t) & - \sin(\Omega t) \\
+	\end{bmatrix} \right) J^{-1} \delta \tau
 \end{align}
+
+The general solution is just the sum of the particular and homogeneous solutions.
 
 \end{document}

@@ -8,7 +8,10 @@ addpath("..\util\")
 %% Problem Initalization
 
 % Rotation formulations
-J = blkdiag(60, 90, 60); % Inertia matrix
+J1 = 60;
+J2 = 90;
+J3 = 60;
+J = blkdiag(J1, J2, J3); % Inertia matrix
 w_b_0 = [0 0.5 0]'; % Initial rotation rate, rad/sec
 q_inertial2body_0 = [0 0 0 1]'; % Initial attitude quaternion
 
@@ -37,11 +40,21 @@ T = [0.001 0 0]';
 % Run simulation
 out = sim("simulink/h2p1_sim");
 
-%% Extract information
+% Extract information
 r_inertial_hist = squeeze(out.pos);
 q_inertial2body_hist = squeeze(out.quat);
 w_body_hist = squeeze(out.w);
 tout = out.tout;
+
+% Find the predicted deviations from nominal
+k1 = (J2-J3)/J1;
+k3 = (J1-J2)/J3;
+Omega = sqrt(k1*k3*w_b_0(2)^2);
+domega = zeros(2,length(tout));
+for ii = 1:length(tout)
+    A = [-sin(Omega*tout(ii)), sqrt(k1/k3)*cos(Omega*tout(ii)); sqrt(k3/k1)*cos(Omega*tout(ii)), -sin(Omega*tout(ii))];
+    domega(:,ii) = (1/Omega)*([0 1; 1 0] - A)*[J1^-1, 0; 0, J3^-1]*[T(1); T(3)];
+end
 
 %% Plotting
 
