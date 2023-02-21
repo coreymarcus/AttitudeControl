@@ -1,6 +1,6 @@
 \documentclass[]{article}
 
-\usepackage{parskip,amsmath}
+\usepackage{parskip,amsmath,tensor}
 \usepackage[margin=0.5in]{geometry}
 
 %opening
@@ -13,6 +13,7 @@
 
 \newcommand{\CrossProd}[1]{\left[ #1 \times \right]}
 \newcommand{\VecToQuat}[1]{\begin{bmatrix} #1 \\ 0 \end{bmatrix}}
+\newcommand{\LeftSuper}[2]{\tensor[^#1]{#2}{}}
 
 \section{Prompt}
 
@@ -42,4 +43,314 @@ The error quaternion evolves as
 \end{equation}
 Note: This step is a little uncertain to me, maybe need to review the steps for differentiation of the cross product. It looks like the product rule holds for cross products so that is the likely avenue for success.
 
+We will assume the error quaternion is small.
+\begin{equation}
+	\delta q = \begin{bmatrix}
+		\delta \theta_1/2 \\
+		\delta \theta_2/2 \\
+		\delta \theta_3/2 \\
+		1
+	\end{bmatrix}
+\end{equation}
+
+Changes in the vector component are of the most interest since
+\begin{equation}
+	\delta \dot{q}_v = \begin{bmatrix}
+		\delta \dot{\theta}_1/2 \\
+		\delta \dot{\theta}_2/2 \\
+		\delta \dot{\theta}_3/2
+	\end{bmatrix} = \delta \dot{\theta}/2
+\end{equation}
+
+The evolution can be expressed as
+\begin{align}
+	\delta \dot{\theta}/2 & = \frac{1}{2} \VecToQuat{\bar{\omega}} \otimes \delta q - \frac{1}{2} \delta q \otimes \VecToQuat{\bar{\omega}} + \frac{1}{2} \VecToQuat{\delta \omega} \otimes \delta q \\
+	& = \frac{1}{2} \left( \bar{\omega} - \delta \theta/2 \times \bar{\omega} \right) - \frac{1}{2} \left( \bar{\omega} - \bar{\omega} \times \delta \theta/2\right) + \frac{1}{2} \left( \delta \omega - \delta \theta/2 \times \delta \omega \right) \\
+	& = \frac{1}{2} \left( - \delta \theta/2 \times \bar{\omega} \right) - \frac{1}{2} \left( - \bar{\omega} \times \delta \theta/2\right) + \frac{1}{2} \left( \delta \omega - \delta \theta/2 \times \delta \omega \right) \\
+	& = \frac{1}{2} \left( - \delta \theta/2 \times \bar{\omega} \right) + \frac{1}{2} \left( \bar{\omega} \times \delta \theta/2\right) + \frac{1}{2} \left( \delta \omega - \delta \theta/2 \times \delta \omega \right) \\
+	& = \frac{1}{2} \left( \bar{\omega} \times \delta \theta/2  \right) + \frac{1}{2} \left( \bar{\omega} \times \delta \theta/2\right) + \frac{1}{2} \left( \delta \omega - \delta \theta/2 \times \delta \omega \right) \\
+	& = \bar{\omega} \times \delta \theta/2 + \frac{1}{2} \left( \delta \omega - \delta \theta/2 \times \delta \omega \right) \\
+	& \text{neglect 2nd order effect } \delta \theta/2 \times \delta \omega \\
+	\delta \dot{\theta}/2 & = \bar{\omega} \times \delta \theta/2 + \frac{1}{2} \delta \omega \\
+	\delta \dot{\theta} & = \bar{\omega} \times \delta \theta + \delta \omega
+\end{align}
+I differ from Renato's notes by a sign on the cross product in the above. I will use his since he's likely correct. Update: Yes, I think I am incorrect due to an error in my quaternion composition.
+
+Our nominal $\bar{\omega}$ is just the orbit rate, $n$, around the $z$ axis.
+\begin{align}
+	\delta \dot{\theta} & = \delta \omega - \bar{\omega} \times \delta \theta \\
+	\delta \dot{\theta} & = \delta \omega - \begin{bmatrix} 0 \\ 0 \\ n	\end{bmatrix} \times \delta \theta \\
+	\delta \dot{\theta} & = \delta \omega - \begin{bmatrix} 0 & -n & 0 \\ n & 0 & 0 \\ 0 & 0 & 0 \end{bmatrix} \delta \theta \\
+	\delta \dot{\theta} & = \delta \omega - \begin{bmatrix}
+		- \delta \theta_2 \\
+		\delta \theta_1 \\
+		0
+	\end{bmatrix}
+\end{align}
+
+From H2P1 we know
+\begin{equation}
+	\label{eqn:linearized_omega}
+	\delta \dot{\omega} = \begin{bmatrix}
+		0 & \frac{\bar{\omega}_3(J_2 - J_3)}{J_1} & \frac{\bar{\omega}_2(J_2 - J_3)}{J_1} \\
+		-\frac{\bar{\omega}_3(J_1 - J_3)}{J_2} & 0 & -\frac{\bar{\omega}_1(J_1 - J_3)}{J_2} \\
+		\frac{\bar{\omega}_2(J_1 - J_2)}{J_3} & \frac{\bar{\omega}_1(J_1 - J_2)}{J_3} & 0
+	\end{bmatrix} \delta \omega + J^{-1} \delta \tau
+\end{equation}
+
+We also have gravity gradient perturbations
+\begin{equation}
+	\tau_{gg} = 3 n^2 d^{b} \times J d^{b}
+\end{equation}
+Since we're nominally earth pointing,
+\begin{equation}
+	d^{\bar{b}} = \begin{bmatrix}
+		0 \\
+		1 \\
+		0
+	\end{bmatrix}
+\end{equation}
+
+The transformation between nominal and actual is $T_{\bar{b}}^b$. We linearize it as follows.
+\begin{align}
+	d^b = T_{\bar{b}}^b & \approx \left(I - \CrossProd{\delta \theta}\right) d^{\bar{b}} \\
+	& \approx \left(I - \begin{bmatrix}
+		0 & -\delta \theta_3 & \delta \theta_2 \\
+		\delta \theta_3 & 0 & -\delta \theta_1 \\
+		-\delta \theta_2 & \delta \theta_1 & 0
+	\end{bmatrix}\right) \begin{bmatrix}
+	0 \\
+	1 \\
+	0
+\end{bmatrix} \\
+& \approx  \begin{bmatrix}
+	1 & \delta \theta_3 & -\delta \theta_2 \\
+	-\delta \theta_3 & 1 & \delta \theta_1 \\
+	\delta \theta_2 & -\delta \theta_1 & 1
+\end{bmatrix} \begin{bmatrix}
+	0 \\
+	1 \\
+	0
+\end{bmatrix} \\
+& \approx \begin{bmatrix}
+	\delta \theta_3 \\
+	1 \\
+	- \delta \theta_1
+\end{bmatrix}
+\end{align}
+
+Now we have a formulation for gravity gradient torque
+\begin{align}
+	\tau_{gg} & = 3 n^2 \begin{bmatrix}
+		0 & \delta \theta_1 & 1 \\
+		-\delta \theta_1 & 0 & -\delta \theta_3 \\
+		-1 & \delta \theta_3 & 0 
+	\end{bmatrix} \begin{bmatrix}
+	J_1 \delta \theta_3 \\
+	J_2 \\
+	-J_3 \delta \theta_1
+\end{bmatrix} \\
+& = 3 n^2 \begin{bmatrix}
+	(J_2 - J_3) \delta \theta_1 \\
+	(J_3 - J_1) \delta \theta_3 \delta \theta_1 \\
+	(J_1 - J_2) \delta \theta_3
+\end{bmatrix}
+\end{align}
+
+Now we need to consider the control input provided by the momentum wheel. Assume it is aligned with the body $z$ axis and has momentum $h_0$.
+\begin{equation}
+	h_w^b = \begin{bmatrix}
+		0 \\ 0 \\ h_0
+	\end{bmatrix}
+\end{equation}
+
+If its angular momentum changes, it torques the satellite in the opposite direction. $\tau_w^b$ is the torque provided by the wheel on the satellite. 
+\begin{equation}
+	\LeftSuper{i}{\dot{h}}_w^b = \LeftSuper{b}{\dot{h}}_w^b + \omega_{b/i}^b \times h_w^b = -\tau_w^b
+\end{equation}
+
+Assume for now that the wheel speed and direction are constant with respect to the body frame. Then $\LeftSuper{b}{\dot{h}}_w^b = 0$.
+\begin{equation}
+	\tau_w = - \omega_{b/i}^b \times h_w = - \begin{bmatrix}
+		0 & -(n + \delta \omega_3) & \delta \omega_2 \\
+		n + \delta \omega_3 & 0 & -\delta \omega_1 \\
+		-\delta \omega_2 & \delta \omega_1 & 0
+	\end{bmatrix} \begin{bmatrix}
+	0 \\ 0 \\ h_0
+\end{bmatrix} = \begin{bmatrix}
+-\delta \omega_2 h_0 \\
+\delta \omega_1 h_0 \\
+0
+\end{bmatrix}
+\end{equation}
+
+We can put it all together with the linearized model Equation \eqref{eqn:linearized_omega}
+\begin{align}
+	\delta \dot{\omega} & = \begin{bmatrix}
+		0 & \frac{n(J_2 - J_3)}{J_1} & 0 \\
+		-\frac{n(J_1 - J_3)}{J_2} & 0 & 0 \\
+		0 & 0 & 0
+	\end{bmatrix} \begin{bmatrix}
+	\delta \omega_1 \\
+	\delta \omega_2 \\
+	\delta \omega_3
+\end{bmatrix} + J^{-1} \tau_{gg} + J^{-1} \tau_w \\
+& = \begin{bmatrix}
+	\frac{n(J_2 - J_3)}{J_1} \delta \omega_2 \\
+	-\frac{n(J_1 - J_3)}{J_2} \delta \omega_1 \\
+	0
+\end{bmatrix} + \begin{bmatrix}
+\delta \theta_3/J_1 \\
+1 \\
+- \delta \theta_1/J_3
+\end{bmatrix} + J^{-1} \tau_w \\
+\label{eqn:all_torque}
+& = \begin{bmatrix}
+	\frac{n(J_2 - J_3)}{J_1} \delta \omega_2 \\
+	-\frac{n(J_1 - J_3)}{J_2} \delta \omega_1 \\
+	0
+\end{bmatrix} +  3 n^2 \begin{bmatrix}
+(J_2 - J_3) \delta \theta_1/J_1 \\
+(J_3 - J_1) \delta \theta_3 \delta \theta_1/J_2 \\
+(J_1 - J_2) \delta \theta_3/J_3
+\end{bmatrix} + \begin{bmatrix}
+-\delta \omega_2 h_0/J_1 \\
+\delta \omega_1 h_0/J_2 \\
+0
+\end{bmatrix}
+\end{align}
+
+We also know
+\begin{equation}
+	\label{eqn:dtheta}
+	\delta \dot{\theta} \approx - \bar{\omega} \times \delta \theta + \delta \omega = -\begin{bmatrix}
+		0 &-n & 0 \\
+		n & 0 & 0 \\
+		0 & 0 & 0 \end{bmatrix} \delta \theta + \delta \omega = \begin{bmatrix}
+		n \delta \theta_2 \\
+		-n \delta \theta_1 \\
+		0 
+	\end{bmatrix} + \delta \omega
+\end{equation}
+
+Differentiate
+\begin{equation}
+	\delta \ddot{\theta} = \begin{bmatrix}
+		n \delta \dot{\theta}_2 \\
+		-n \delta \dot{\theta}_1 \\
+		0 
+	\end{bmatrix} + \delta \dot{\omega}
+\end{equation}
+
+Substitute into equation \eqref{eqn:all_torque}
+\begin{equation}
+	\delta \ddot{\theta} - \begin{bmatrix}
+		n \delta \dot{\theta}_2 \\
+		-n \delta \dot{\theta}_1 \\
+		0 
+	\end{bmatrix} = \begin{bmatrix}
+	\frac{n(J_2 - J_3)}{J_1} \delta \omega_2 \\
+	-\frac{n(J_1 - J_3)}{J_2} \delta \omega_1 \\
+	0
+\end{bmatrix} +  3 n^2 \begin{bmatrix}
+(J_2 - J_3) \delta \theta_1/J_1 \\
+(J_3 - J_1) \delta \theta_3 \delta \theta_1/J_2 \\
+(J_1 - J_2) \delta \theta_3/J_3
+\end{bmatrix} + \begin{bmatrix}
+-\delta \omega_2 h_0/J_1 \\
+\delta \omega_1 h_0/J_2 \\
+0
+\end{bmatrix}
+\end{equation}
+
+Now rearrange Equation \eqref{eqn:dtheta}.
+\begin{equation}
+	\begin{bmatrix}
+		\delta \omega_1 \\
+		\delta \omega_2
+	\end{bmatrix} = \begin{bmatrix}
+	\delta \dot{\theta}_1 - n \delta \theta_2 \\
+	\delta \dot{\theta}_2 + n \delta \theta_1
+\end{bmatrix}
+\end{equation}
+Substitute into the above
+\begin{equation}
+	\delta \ddot{\theta} = \begin{bmatrix}
+		\frac{n(J_2 - J_3)}{J_1} \left(\delta \dot{\theta}_2 + n \delta \theta_1\right) \\
+		-\frac{n(J_1 - J_3)}{J_2} \left(\delta \dot{\theta}_1 - n \delta \theta_2\right) \\
+		0
+	\end{bmatrix} +  3 n^2 \begin{bmatrix}
+		(J_2 - J_3) \delta \theta_1/J_1 \\
+		(J_3 - J_1) \delta \theta_3 \delta \theta_1/J_2 \\
+		(J_1 - J_2) \delta \theta_3/J_3
+	\end{bmatrix} + \begin{bmatrix}
+		-\left(\delta \dot{\theta}_2 + n \delta \theta_1\right) h_0/J_1 \\
+		\left(\delta \dot{\theta}_1 - n \delta \theta_2\right) h_0/J_2 \\
+		0
+	\end{bmatrix} + \begin{bmatrix}
+	n \delta \dot{\theta}_2 \\
+	-n \delta \dot{\theta}_1 \\
+	0 
+\end{bmatrix}
+\end{equation}
+
+Since we're looking for a first order model, lets neglect the $\delta \theta_1 \delta \theta_3$ term and allow the system to become linear
+\begin{equation}
+	\delta \ddot{\theta} = \begin{bmatrix}
+		\frac{n(J_2 - J_3)}{J_1} \left(\delta \dot{\theta}_2 + n \delta \theta_1\right) \\
+		-\frac{n(J_1 - J_3)}{J_2} \left(\delta \dot{\theta}_1 - n \delta \theta_2\right) \\
+		0
+	\end{bmatrix} +  3 n^2 \begin{bmatrix}
+		(J_2 - J_3) \delta \theta_1/J_1 \\
+		0\\
+		(J_1 - J_2) \delta \theta_3/J_3
+	\end{bmatrix} + \begin{bmatrix}
+	-\left(\delta \dot{\theta}_2 + n \delta \theta_1\right) h_0/J_1 \\
+	\left(\delta \dot{\theta}_1 - n \delta \theta_2\right) h_0/J_2 \\
+	0
+	\end{bmatrix} + \begin{bmatrix}
+		n \delta \dot{\theta}_2 \\
+		-n \delta \dot{\theta}_1 \\
+		0 
+	\end{bmatrix}
+\end{equation}
+
+To understand the model better, lets group based on derivative order
+\begin{equation}
+	\delta \ddot{\theta} = \begin{bmatrix}
+		0 & \frac{n(J_2 - J_3)}{J_1} + n - \frac{h_0}{J_1} & 0 \\
+		- \frac{n(J_2 - J_3)}{J_1} - n + \frac{h_0}{J_1} & 0 & 0 \\
+		0 & 0 & 0
+	\end{bmatrix}
+	\delta \dot{\theta} + \begin{bmatrix}
+		\frac{n^2(J_2 - J_3)}{J_1} + \frac{3n^2(J_2 - J_3)}{J_1} - \frac{n h_0}{J_1} & 0 & 0 \\
+		0 & \frac{n^2(J_2 - J_3)}{J_1} - \frac{n h_0}{J_2} & 0 \\
+		0 & 0 & \frac{3n^2(J_1 - J_2)}{J_3}
+	\end{bmatrix}
+	\delta \theta
+\end{equation}
+
+The roll loop is decoupled from the other two.
+\begin{equation}
+	\delta \ddot{\theta}_3 = \frac{3n^2(J_1 - J_2)}{J_3} \delta \theta_3 + \tau_3
+\end{equation}
+
+We assume PD control
+\begin{align}
+	\delta \ddot{\theta}_3 & = \frac{3n^2(J_1 - J_2)}{J_3} \delta \theta_3 - k_p \delta \theta_3 - k_d \delta \dot{\theta}_3 \\
+	s^2 \delta \theta_3 & = \frac{3n^2(J_1 - J_2)}{J_3} \delta \theta_3 - k_p \delta \theta_3 - s k_d \delta \theta_3 \\
+	s^2 \delta \theta_3 + s k_d \delta \theta_3 + \left(k_p - \frac{3n^2(J_1 - J_2)}{J_3}\right) \delta \theta_3  & = 0 \\
+	s^2 \delta \theta_3 + 2 \xi \omega_n s \delta \theta_3 + \omega_n^2 \delta \theta_3  & = 0 \\
+	\omega_n & = \sqrt{k_p - \frac{3n^2(J_1 - J_2)}{J_3}} \\
+	\xi & = \frac{k_d}{2 \sqrt{k_p - \frac{3n^2(J_1 - J_2)}{J_3}}}
+\end{align}
+
+Use final value theorem
+\begin{align}
+	\delta \theta_3 (t \rightarrow \infty) & = \lim_{s \rightarrow 0} s \delta \theta_3(s) \\
+	& = \lim_{s \rightarrow 0} \frac{s \tau_3}{s^2 + 2\xi \omega_n s + \omega_n^2} \\
+	& = \lim_{s \rightarrow 0} \frac{s \tau_3}{s^2 + 2\xi \omega_n s + \omega_n^2} \\
+	& = \lim_{s \rightarrow 0} \frac{\tau_3}{2s + 2\xi \omega_n} \\
+	& = \frac{\tau}{2 \xi \omega_n}
+\end{align}
 \end{document}

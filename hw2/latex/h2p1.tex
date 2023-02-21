@@ -65,7 +65,7 @@ We will now drop the approximate sign for convenience. But note that the approxi
 	0 & \frac{\bar{\omega}_3(J_2 - J_3)}{J_1} & \frac{\bar{\omega}_2(J_2 - J_3)}{J_1} \\
 	-\frac{\bar{\omega}_3(J_1 - J_3)}{J_2} & 0 & -\frac{\bar{\omega}_1(J_1 - J_3)}{J_2} \\
 	\frac{\bar{\omega}_2(J_1 - J_2)}{J_3} & \frac{\bar{\omega}_1(J_1 - J_2)}{J_3} & 0
-	\end{bmatrix} \delta \omega + \delta \tau
+	\end{bmatrix} \delta \omega + J^{-1}\delta \tau
 \end{align}
 At this point, note two things; $J_1 = J_3$ and $\bar{\omega}_1 = \bar{\omega}_3 = 0$.
 \begin{align}
@@ -73,7 +73,7 @@ At this point, note two things; $J_1 = J_3$ and $\bar{\omega}_1 = \bar{\omega}_3
 0 & 0 & \frac{\bar{\omega}_2(J_2 - J_3)}{J_1} \\
 0 & 0 & 0 \\
 \frac{\bar{\omega}_2(J_1 - J_2)}{J_3} & 0 & 0
-\end{bmatrix} \delta \omega + \delta \tau \\
+\end{bmatrix} \delta \omega + J^{-1} \delta \tau \\
 \begin{bmatrix}
 \delta \dot{\omega}_1 \\
 \delta \dot{\omega}_2 \\
@@ -82,7 +82,7 @@ At this point, note two things; $J_1 = J_3$ and $\bar{\omega}_1 = \bar{\omega}_3
 \frac{\bar{\omega}_2(J_2 - J_3)}{J_1} \delta \omega_3 \\
 0 \\
 \frac{\bar{\omega}_2(J_1 - J_2)}{J_3} \delta \omega_1
-\end{bmatrix} + \delta \tau
+\end{bmatrix} + J^{-1} \delta \tau
 \end{align}
 
 We can define $k_1 = \frac{J_2 - J_3}{J_1}$ and $k_3 = \frac{J_1 - J_2}{J_3}$. Then the free response of $\delta \omega$ is given as the following.

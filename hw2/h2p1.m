@@ -24,7 +24,8 @@ w = 0;
 theta = 0;
 
 % Final time
-Tf = 60*60;
+% Tf = 60*60;
+Tf = 60;
 
 % Gravity
 mu = 398600; %km3/s2
