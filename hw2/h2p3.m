@@ -11,7 +11,7 @@ addpath("..\util\")
 mu = 398600; %km3/s2
 
 % Orbital elements
-a = 6371 + 400;
+a = 6371 + 200;
 e = 0;
 i = 0;
 Ohm = 0;
@@ -21,44 +21,34 @@ theta = 270;
 
 % Rotation formulations
 J = blkdiag(90, 70, 60); % Inertia matrix
-w_b_0 = (pi/180)*[0.0001 0.0001 0]'; % Initial rotation rate, rad/sec
+w_b_0 = [0 0 0]'; % Initial rotation rate, rad/sec
 q_inertial2body_0 = [0 0 0 1]'; % Initial attitude quaternion
 
 % Final time
 Tf = 60*60;
 
-% Find orbit rate and assign to omega
-n = sqrt(mu/a^3);
-w_b_0(3) = n;
+% Solar panel parameters
+panel.n = [1 0 0]';
+panel.A = 1;
+panel.c = [0 0 1.5]';
 
-% Nominal rotation
-w_b_nominal = [0 0 n]';
-
-%% Roll Controller Design
-
-% Parameters
-angle_tol = 0.5*pi/180;
-safety_fac = 2;
-
-% Maximum roll torque
-tau3_max = abs(3*n^2*(J(2,2) - J(1,1)) * (0.5));
-
-% Find natural frequency
-omega_n = sqrt(safety_fac*tau3_max/angle_tol);
-
-% Use natural frequency to find proportional gain for roll
-kp_roll = omega_n^2 + 3*n^2*(J(1,1) - J(2,2))/J(3,3)
-
-% Get derivative gain
-kd_roll = 2*omega_n
+% Atmospheric parameters
+rho0 = 4E-13; %kg/m^3
+r0 = 7298.145; % km
+H = 200.0; %km
+Cd = 2;
 
 %% Main
+
+% Find orbit rate and assign to omega
+n = sqrt(mu/a^3);
+% w_b_0(3) = n;
 
 % Convert OE
 [r_inertial_0, v_inertial_0] = OE2State(a, e, i, Ohm, w, theta);
 
 % Run simulation
-out = sim("simulink/h2p2_sim");
+out = sim("simulink/h2p3_sim");
 
 %% Extract information
 r_inertial_hist = squeeze(out.pos);

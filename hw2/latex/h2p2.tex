@@ -153,7 +153,7 @@ Now we have a formulation for gravity gradient torque
 & = 3 n^2 \begin{bmatrix}
 	(J_2 - J_3) \delta \theta_1 \\
 	(J_3 - J_1) \delta \theta_3 \delta \theta_1 \\
-	(J_1 - J_2) \delta \theta_3
+	(J_2 - J_1) \delta \theta_3
 \end{bmatrix}
 \end{align}
 
@@ -345,12 +345,20 @@ We assume PD control
 	\xi & = \frac{k_d}{2 \sqrt{k_p - \frac{3n^2(J_1 - J_2)}{J_3}}}
 \end{align}
 
-Use final value theorem
+Use final value theorem with a unit step $\tau$ disturbance. $\tau(s) = 1/s$.
 \begin{align}
-	\delta \theta_3 (t \rightarrow \infty) & = \lim_{s \rightarrow 0} s \delta \theta_3(s) \\
-	& = \lim_{s \rightarrow 0} \frac{s \tau_3}{s^2 + 2\xi \omega_n s + \omega_n^2} \\
-	& = \lim_{s \rightarrow 0} \frac{s \tau_3}{s^2 + 2\xi \omega_n s + \omega_n^2} \\
-	& = \lim_{s \rightarrow 0} \frac{\tau_3}{2s + 2\xi \omega_n} \\
-	& = \frac{\tau}{2 \xi \omega_n}
+	\delta \theta_3 (t \rightarrow \infty) & = \lim_{\rightarrow 0} s \delta \theta_3(s) \\
+	& = \lim_{s \rightarrow 0} \frac{\tau_3}{s^2 + 2\xi \omega_n s + \omega_n^2} \\
+	& = \frac{\tau_3}{\omega_n^2}
 \end{align}
+We have a accuracy requirement of $.5$ degrees = $0.00873$ radians. We also want a critically damped system $\xi = 1$. If we know our maximum disturbance torque, we will then know $k_p$. If we know that, we'll be able to pick $k_d$. Since our only disturbance is gravity gradient, we can take those values for the maximum torque.
+\begin{equation}
+	\tau_{gg} = 3 n^2 d^b \times J d^b
+\end{equation}
+We can show that the roll torque is found as
+\begin{equation}
+	\tau_{gg,3} = 3n^2 (J_2 - J_1) d_x^b d_y^b
+\end{equation}
+where $d_x^b$ and $d_y^b$ are components of the down direction. Torque is maximized when $d_x^b = d_y^b = \sqrt{1/2}$. This means the maximum roll disturbance torque is 3.8521e-05. Using a safety factor of 2, we get $k_p = 0.0088$. We also find $k_d = 0.1879$.
+
 \end{document}
