@@ -15,7 +15,10 @@ end
 
 % Make sure we've found a correct eigenvalue
 if(sum(targ) ~= 1)
+    n = [1 0 0]';
+    theta = 0;
     error("No unity eigenvalue found.")
+    return;
 end
 
 % Eigenvector is the rotation axis
