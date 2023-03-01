@@ -2,6 +2,10 @@ function [theta, n] = Quat2AxisAngle(q)
 %Quat2AxisAngle converts quaternion to axis angle representation.
 %Quaternions are scalar last and right handed
 
+% if(abs(q(4)) > 1)
+%     x = 5;
+% end
+
 theta = 2*acos(q(4));
 
 if(theta > 0)

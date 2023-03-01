@@ -51,6 +51,10 @@ tau_gg = simplify(3*n^2 * cross(db,J*db));
 % Neglect the dtheta1*dtheta3 term
 tau_gg = subs(tau_gg,dtheta(1)*dtheta(3),0);
 
+% Find maximum tau_gg in each direction
+db_sym = sym('db_sym',[3 1],'real');
+tau_gg_max = simplify(3*n^2 * cross(db_sym,J*db_sym));
+
 %% Momentum wheel
 
 % wheel inertia
@@ -95,17 +99,25 @@ dthetadotdot_py = dthetadotdot_py + tau_dist./[J(1,1); J(2,2)];
 
 % Assume forms for control inputs
 syms kp1 kp2 kd1 kd2 'real'
+
+% Simple forms
+% dthetadotdot_py = subs(dthetadotdot_py,tau_cont(1), -kp1*dtheta(1) - kd1*dthetadotsym(1));
+% dthetadotdot_py = subs(dthetadotdot_py,tau_cont(2), -kp2*dtheta(2) - kd2*dthetadotsym(2));
+
 % Renato's forms
 % dthetadotdot_py = subs(dthetadotdot_py,tau_cont(1), -kp1*dtheta(1) - kd1*dthetadotsym(1) + n*h0*dtheta(1));
 % dthetadotdot_py = subs(dthetadotdot_py,tau_cont(2), -kp2*dtheta(2) - kd2*dthetadotsym(2) + n*h0*dtheta(2));
 
 % My hacky cancellation forms
-dthetadotdot_py = subs(dthetadotdot_py,tau_cont(1), -kp1*dtheta(1) - kd1*dthetadotsym(1) + n*h0*dtheta(1) + h0*dthetadotsym(2));
-dthetadotdot_py = subs(dthetadotdot_py,tau_cont(2), -kp2*dtheta(2) - kd2*dthetadotsym(2) + n*h0*dtheta(2) - h0*dthetadotsym(1));
+% dthetadotdot_py = subs(dthetadotdot_py,tau_cont(1), -kp1*dtheta(1) - kd1*dthetadotsym(1) + n*h0*dtheta(1) + h0*dthetadotsym(2));
+% dthetadotdot_py = subs(dthetadotdot_py,tau_cont(2), -kp2*dtheta(2) - kd2*dthetadotsym(2) + n*h0*dtheta(2) - h0*dthetadotsym(1));
 
-% % My hacky cancellation forms
-% dthetadotdot_py = subs(dthetadotdot_py,tau_cont(1), -kp1*dtheta(1) - kd1*dthetadotsym(1) + h0*dthetadotsym(2));
-% dthetadotdot_py = subs(dthetadotdot_py,tau_cont(2), -kp2*dtheta(2) - kd2*dthetadotsym(2) - h0*dthetadotsym(1));
+% My better cancellation form
+dthetadotdot_py = subs(dthetadotdot_py,tau_cont(1), -kp1*dtheta(1) - kd1*dthetadotsym(1) + n*h0*dtheta(1) + h0*dthetadotsym(2) - J(1,1)*n*dthetadotsym(2));
+dthetadotdot_py = subs(dthetadotdot_py,tau_cont(2), -kp2*dtheta(2) - kd2*dthetadotsym(2) + n*h0*dtheta(2) - h0*dthetadotsym(1) + J(2,2)*n*dthetadotsym(1) + J(1,1)*n*dthetadotsym(1)- J(1,1)*n^2*dtheta(2));
+
+% Simplify
+dthetadotdot_py = simplify(dthetadotdot_py);
 
 % Perform a laplace transform
 syms s 'real'
@@ -118,39 +130,6 @@ dthetadotdot_py_s = subs(dthetadotdot_py_s,dthetadotsym(2), s*dtheta_s(2));
 % Find A such that A*dtheta(s) = tau_dist(s)
 pretty(collect(simplify(s^2*dtheta_s - dthetadotdot_py_s), dtheta_s))
 
-% Inspection of the above helps us to find the following components of A
-% We also manually remove extraneous J1 and J2 terms
-A11 = kp1 + kd1*s + J(1,1)*s^2
-A12 = -J(1,1)*n*s
-A21 = J(2,2)*n*s + J(1,1)*n*s
-A22 = kp2 + kd2*s + J(2,2)*s^2 - J(1,1)*n^2
+%% Yaw controller (theta1)
 
-% Assume h0 >> nJ_max
-A12_sub = subs(A12,J(1,1)*n*s,0);
-A21_sub = subs(A21,J(2,2)*n*s,0);
-A21_sub = subs(A21_sub,J(1,1)*n*s,0);
-
-% The detirminant will tell us the poles of the system
-% A = [A11, A12_sub,;
-%     A21_sub, A22];
-A = [A11, A12,;
-    A21, A22];
-detA = det(A);
-
-% Collect terms of s
-T1 = collect(simplify(detA), s);
-C1 = coeffs(T1,s);
-
-% We would like our system to be almost decoupled, in that case
-detA_decouple = A11*A22;
-T2 = collect(simplify(detA_decouple), s);
-C2 = coeffs(T2,s);
-
-% Our goal is to minimize the difference between C1 and C2
-diffC = simplify(C1 - C2)
-
-% We notice that the poles are decoupled if
-h01 = 0.5*(2*J(1,1)*n + J(2,2)*n + sqrt((-2*J(1,1)*n - J(2,2)*n)^2 - 4*J(1,1)^2));
-h02 = 0.5*(2*J(1,1)*n + J(2,2)*n + sqrt((-2*J(1,1)*n - J(2,2)*n)^2 - 4*J(1,1)^2));
-
-% Make substitutions
+%

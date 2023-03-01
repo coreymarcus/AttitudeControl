@@ -1,6 +1,6 @@
 %% Run sim
 
-clc; clear;
+clc; clear; close all;
 
 G      = 6.6743e-11;                    % m3/kgs2
 m_e    = 5.97219e+24;                   % kg 
