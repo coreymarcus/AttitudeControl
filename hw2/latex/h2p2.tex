@@ -330,19 +330,20 @@ To understand the model better, lets group based on derivative order
 	\delta \theta
 \end{equation}
 
+\subsection{Roll Loop}
 The roll loop is decoupled from the other two.
 \begin{equation}
-	\delta \ddot{\theta}_3 = \frac{3n^2(J_1 - J_2)}{J_3} \delta \theta_3 + \tau_3
+	\delta \ddot{\theta}_3 = \frac{3n^2(J_1 - J_2)}{J_3} \delta \theta_3 + \tau_3/J_3
 \end{equation}
 
-We assume PD control
+We assume PD control, $\tau_3 = k_p \delta \theta_3 - k_d \delta \dot{\theta}_3$. 
 \begin{align}
-	\delta \ddot{\theta}_3 & = \frac{3n^2(J_1 - J_2)}{J_3} \delta \theta_3 - k_p \delta \theta_3 - k_d \delta \dot{\theta}_3 \\
-	s^2 \delta \theta_3 & = \frac{3n^2(J_1 - J_2)}{J_3} \delta \theta_3 - k_p \delta \theta_3 - s k_d \delta \theta_3 \\
-	s^2 \delta \theta_3 + s k_d \delta \theta_3 + \left(k_p - \frac{3n^2(J_1 - J_2)}{J_3}\right) \delta \theta_3  & = 0 \\
+	\delta \ddot{\theta}_3 & = \frac{3n^2(J_1 - J_2)}{J_3} \delta \theta_3 + k_p \delta \theta_3/J_3 - k_d \delta \dot{\theta}_3/J_3 \\
+	s^2 \delta \theta_3 & = \frac{3n^2(J_1 - J_2)}{J_3} \delta \theta_3 + k_p \delta \theta_3/J_3 - s k_d \delta \theta_3/J_3 \\
+	s^2 \delta \theta_3 + s k_d \delta \theta_3/J_3 + \left(-k_p/J_3 - \frac{3n^2(J_1 - J_2)}{J_3}\right) \delta \theta_3  & = 0 \\
 	s^2 \delta \theta_3 + 2 \xi \omega_n s \delta \theta_3 + \omega_n^2 \delta \theta_3  & = 0 \\
-	\omega_n & = \sqrt{k_p - \frac{3n^2(J_1 - J_2)}{J_3}} \\
-	\xi & = \frac{k_d}{2 \sqrt{k_p - \frac{3n^2(J_1 - J_2)}{J_3}}}
+	\omega_n & = \sqrt{-k_p/J_3 - \frac{3n^2(J_1 - J_2)}{J_3}} \\
+	\xi & = \frac{k_d}{2 \sqrt{-k_p/J_3 - \frac{3n^2(J_1 - J_2)}{J_3}}}
 \end{align}
 
 Use final value theorem with a unit step $\tau$ disturbance. $\tau(s) = 1/s$.
@@ -359,6 +360,20 @@ We can show that the roll torque is found as
 \begin{equation}
 	\tau_{gg,3} = 3n^2 (J_2 - J_1) d_x^b d_y^b
 \end{equation}
-where $d_x^b$ and $d_y^b$ are components of the down direction. Torque is maximized when $d_x^b = d_y^b = \sqrt{1/2}$. This means the maximum roll disturbance torque is 3.8521e-05. Using a safety factor of 2, we get $k_p = 0.0088$. We also find $k_d = 0.1879$.
+where $d_x^b$ and $d_y^b$ are components of the down direction. Torque is maximized when $d_x^b = d_y^b = \sqrt{1/2}$. This means the maximum roll disturbance torque is 3.8521e-05. Using a safety factor of 2, we get $k_p = -0.5298$. We also find $k_d = 0.1879$.
+
+\subsection{Pitch and Yaw}
+Pitch and yaw dynamics are given by
+\begin{equation}
+	\delta \ddot{\theta} = \begin{bmatrix}
+	0 & \frac{n(J_2 - J_3)}{J_1} + n - \frac{h_0}{J_1} \\
+	- \frac{n(J_2 - J_3)}{J_1} - n + \frac{h_0}{J_1} & 0 \\
+	\end{bmatrix}
+	\delta \dot{\theta} + \begin{bmatrix}
+	\frac{n^2(J_2 - J_3)}{J_1} + \frac{3n^2(J_2 - J_3)}{J_1} - \frac{n h_0}{J_1} & 0 \\
+	0 & \frac{n^2(J_2 - J_3)}{J_1} - \frac{n h_0}{J_2} \\
+	\end{bmatrix}
+	\delta \theta
+\end{equation}
 
 \end{document}

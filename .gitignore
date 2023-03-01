@@ -3,6 +3,9 @@
 *.avi
 *.slxc
 /hw2/slprj/*
+/external/felipe/HW2/slprj/*
+/external/felipe/HW2/__MACOSX/*
 *.aux
 *.log
 *.gz
+*.r2021b

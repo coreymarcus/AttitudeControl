@@ -4,17 +4,17 @@ function [theta,n] = DCM2AxisAngle(T)
 % Find eigenvalues of T
 [V, D] = eig(T);
 lambdas = diag(D);
-targ = lambdas == 1;
+targ = find(lambdas == 1); % This is inefficient but doing it this way for simulink compatibility
 
 % Check for no rotation
-if(sum(targ) == 3)
+if(length(targ) == 3)
     theta = 0;
     n = [1 0 0]';
     return;
 end
 
 % Make sure we've found a correct eigenvalue
-if(sum(targ) ~= 1)
+if(length(targ) ~= 1)
     n = [1 0 0]';
     theta = 0;
     error("No unity eigenvalue found.")
@@ -22,8 +22,11 @@ if(sum(targ) ~= 1)
 end
 
 % Eigenvector is the rotation axis
-n = V(:,targ);
+n = real(V(1:3,targ(1)));
 assert(norm(n) == 1);
+if(norm(imag(V(1:3),targ(1))) > 0)
+    error("Imaginary Rotation Axis")
+end
 
 % Angle is function of the trace
 theta = acos(0.5*trace(T) - 0.5);
