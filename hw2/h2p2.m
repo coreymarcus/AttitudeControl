@@ -25,15 +25,15 @@ w_b_0 = (pi/180)*[0.0001 0.0001 0]'; % Initial rotation rate, rad/sec
 q_inertial2body_0 = [0 0 0 1]'; % Initial attitude quaternion
 
 % Final time
-% Tf = 60*60;
-Tf = 2500;
+Tf = 60*60;
+% Tf = 10000;
 
 % Find orbit rate and assign to omega
-n = -sqrt(mu/a^3);
-w_b_0(3) = n;
+n = sqrt(mu/a^3);
+w_b_0(3) = -n;
 
 % Nominal rotation
-w_b_nominal = [0 0 n]';
+w_b_nominal = [0 0 -n]';
 
 % Angular momentum of the momentum wheel
 h0 = 70;
@@ -51,15 +51,15 @@ safety_fac = 2;
 tau3_max = abs(3*n^2*(J(2,2) - J(1,1)) * (0.5));
 
 % Find natural frequency
-omega_n_roll = sqrt(safety_fac*tau3_max/angle_tol);
+omega_n_roll = sqrt(safety_fac*tau3_max/(J(3,3)*angle_tol));
 xi_roll = 1;
 
 % Use natural frequency to find proportional gain for roll
 % kp_roll = omega_n^2 + 3*n^2*(J(1,1) - J(2,2))/J(3,3)
-kp_roll = -1*(omega_n_roll^2 + 3*n^2*(J(1,1) - J(2,2))/J(3,3))*J(3,3)
+kp_roll = (omega_n_roll^2 - 3*n^2*(J(1,1) - J(2,2))/J(3,3))*J(3,3)
 
 % Get derivative gain
-kd_roll = 2*xi_roll*omega_n_roll
+kd_roll = 2*xi_roll*omega_n_roll*J(3,3)
 
 %% Yaw controller design
 
