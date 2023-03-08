@@ -3,6 +3,7 @@
 *.avi
 *.slxc
 /hw2/slprj/*
+/hw3/slprj/*
 /external/felipe/HW2/slprj/*
 /external/felipe/HW2/__MACOSX/*
 *.aux
