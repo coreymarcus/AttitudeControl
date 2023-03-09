@@ -129,125 +129,149 @@ figure
 for ii = 1:3
     subplot(3,1,ii)
     hold on
-    plot(tout_no_CMG, w_body_LVLH_ref(ii,:))
+    plot(tout_no_CMG, w_body_LVLH_ref(ii,:),'LineWidth',2)
     xlabel('Time [s]','Interpreter','latex')
-    ylabel('LVLH Body Rate [rad/sec]','Interpreter','latex')
-
+    ylabel('$\omega_{LVLH}$ [rad/sec]','Interpreter','latex')
+    grid on
 end
+saveas(gcf,"latex/figs/P1Q1.pdf")
 
 figure
 for ii = 1:4
     subplot(4,1,ii)
     hold on
-    plot(tout_no_CMG, q_LVLH2body_ref(ii,:))
+    plot(tout_no_CMG, q_LVLH2body_ref(ii,:),'LineWidth',2)
     xlabel('Time [s]','Interpreter','latex')
-    ylabel(strcat('LVLH 2 Body Quat Element ',num2str(ii)))
-
+    ylabel("$q_{b \leftarrow LVLH}$","Interpreter","latex")
+    grid on
 end
+saveas(gcf,"latex/figs/P1Q2.pdf")
 
 figure
 for ii = 1:3
     subplot(3,1,ii)
     hold on
-    plot(tout_no_CMG, w_body_inertial_ref_no_CMG(ii,:))
+    plot(tout_no_CMG, w_body_inertial_ref_no_CMG(ii,:),'LineWidth',2)
     xlabel('Time [s]','Interpreter','latex')
-    ylabel('LVLH Body Rate [rad/sec]','Interpreter','latex')
-
+    ylabel('$\omega_{inertial}$ [rad/sec]','Interpreter','latex')
+    grid on
 end
+saveas(gcf,"latex/figs/P1Q3.pdf")
 
 figure
 for ii = 1:4
     subplot(4,1,ii)
     hold on
-    plot(tout_no_CMG, q_inertial2body_ref(ii,:))
+    plot(tout_no_CMG, q_inertial2body_ref(ii,:),'LineWidth',2)
     xlabel('Time [s]')
-    ylabel(strcat('LVLH 2 Body Quat Element ',num2str(ii)),'Interpreter','latex')
+    ylabel("$q_{b \leftarrow inertial}$",'Interpreter','latex')
+    grid on
 end
+saveas(gcf,"latex/figs/P1Q4.pdf")
 
 %% Plotting Part 2
 
 figure
 for ii = 1:3
     subplot(3,1,ii)
-    plot(tout_no_CMG, err_quat_no_CMG(ii,:))
-    xlabel('Time [s]')
-    ylabel(strcat('Body Nominal 2 Actual Quat Element ',num2str(ii)))
+    plot(tout_no_CMG, err_quat_no_CMG(ii,:),'LineWidth',2)
+    xlabel('Time [s]','Interpreter','latex')
+    ylabel("$q_{b \leftarrow \bar{b}}$","Interpreter","latex")
+    grid on
 end
+saveas(gcf,"latex/figs/P2Q1.pdf")
 
 figure
 for ii = 1:3
     subplot(3,1,ii)
     hold on
-    plot(tout_no_CMG, w_body_inertial_ref_no_CMG(ii,:) - w_body_inertial_no_CMG(ii,:))
-    xlabel('Time [s]')
-    ylabel('Inertial Body Rate Error[rad/sec]')
+    plot(tout_no_CMG, w_body_inertial_ref_no_CMG(ii,:) - w_body_inertial_no_CMG(ii,:),'LineWidth',2)
+    xlabel('Time [s]',"Interpreter","latex")
+    ylabel('$\delta \omega$ [rad/sec]',"Interpreter","latex")
+    grid on
 end
+saveas(gcf,"latex/figs/P2Q2.pdf")
 
 figure
 for ii = 1:4
     subplot(4,1,ii)
     hold on
-    plot(tout_no_CMG, q_inertial2body_no_CMG(ii,:))
-    xlabel('Time [s]')
-    ylabel(strcat('Inertial 2 Body Quat Element ',num2str(ii)))
+    plot(tout_no_CMG, q_inertial2body_no_CMG(ii,:),'LineWidth',2)
+    xlabel('Time [s]','Interpreter','latex')
+    ylabel("$q_{b \leftarrow inertial}$","Interpreter","latex")
+    grid on
 end
+saveas(gcf,"latex/figs/P2Q3.pdf")
 
 figure
 for ii = 1:4
     subplot(4,1,ii)
     hold on
-    plot(tout_no_CMG, q_LVLH2body_no_CMG(ii,:))
-    xlabel('Time [s]')
-    ylabel(strcat('LVLH 2 Body Quat Element ',num2str(ii)))
+    plot(tout_no_CMG, q_LVLH2body_no_CMG(ii,:),"LineWidth",2)
+    xlabel('Time [s]', "Interpreter","latex")
+    ylabel("$q_{b \leftarrow LVLH}$","Interpreter","latex")
+    grid on
 end
+saveas(gcf,"latex/figs/P2Q4.pdf")
 
 %% Plotting Part 3
 
 figure
 for ii = 1:3
     subplot(3,1,ii)
-    plot(tout_w_CMG, err_quat_w_CMG(ii,:))
-    xlabel('Time [s]')
-    ylabel(strcat('Body Nom. 2 Actual Quat Element ',num2str(ii)))
+    plot(tout_w_CMG, err_quat_w_CMG(ii,:),"LineWidth",2)
+    xlabel('Time [s]',"Interpreter","latex")
+    ylabel("$\delta q$","Interpreter","latex")
+    grid on
 end
+saveas(gcf,"latex/figs/P3Q1.pdf")
 
 figure
 for ii = 1:3
     subplot(3,1,ii)
     hold on
-    plot(tout_w_CMG, w_body_inertial_ref_w_CMG(ii,:) - w_body_inertial_w_CMG(ii,:))
-    xlabel('Time [s]')
-    ylabel('Inertial Body Rate Error[rad/sec]')
+    plot(tout_w_CMG, w_body_inertial_ref_w_CMG(ii,:) - w_body_inertial_w_CMG(ii,:),"LineWidth",2)
+    xlabel('Time [s]',"Interpreter","latex")
+    ylabel('$\delta \omega$ [rad/sec]',"Interpreter","latex")
+    grid on
 end
+saveas(gcf,"latex/figs/P3Q2.pdf")
 
 figure
 for ii = 1:4
     subplot(4,2,2*ii-1)
     plot(tout_w_CMG,CMG_rates(ii,:))
     xlabel('Time [sec]',"Interpreter","latex")
-    ylabel(strcat("$\dot{\alpha}$ For CMG ",num2str(ii)),"Interpreter",'latex')
+    ylabel(strcat("$\dot{\alpha}$ ",num2str(ii)," [rad/sec]"),"Interpreter",'latex')
+    grid on
 
     subplot(4,2,2*ii)
     plot(tout_w_CMG,CMG_rates(ii+4,:))
     xlabel('Time [sec]',"Interpreter","latex")
-    ylabel(strcat("$\dot{\beta}$ For CMG ",num2str(ii)),"Interpreter",'latex')
+    ylabel(strcat("$\dot{\beta}$ ",num2str(ii)," [rad/sec]"),"Interpreter",'latex')
+    grid on
 
 end
+saveas(gcf,"latex/figs/P3Q3.pdf")
 
 figure
 for ii = 1:3
     subplot(3,1,ii)
     hold on
-    plot(tout_w_CMG, abs(CMG_h(ii,:)))
-    xlabel('Time [s]')
-    ylabel('ABS () CMG Ang. Mom. [Nm/sec]')
+    plot(tout_w_CMG, abs(CMG_h(ii,:)),"LineWidth",2)
+    xlabel('Time [s]',"Interpreter","latex")
+    ylabel('$|h_{CMG}|$ [kg-m\textsuperscript{2}/sec]',"Interpreter","latex")
+    grid on
 end
+saveas(gcf,"latex/figs/P3Q4.pdf")
 
 figure
 for ii = 1:4
     subplot(4,1,ii)
     hold on
-    plot(tout_w_CMG, q_LVLH2body_w_CMG(ii,:))
-    xlabel('Time [s]')
-    ylabel(strcat('LVLH 2 Body Quat Element ',num2str(ii)))
+    plot(tout_w_CMG, q_LVLH2body_w_CMG(ii,:),"LineWidth",2)
+    xlabel('Time [s]',"Interpreter","latex")
+    ylabel("$q_{b \leftarrow LVLH}$","Interpreter","latex")
+    grid on
 end
+saveas(gcf,"latex/figs/P3Q5.pdf")
