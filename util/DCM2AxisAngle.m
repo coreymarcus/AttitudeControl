@@ -4,7 +4,7 @@ function [theta,n] = DCM2AxisAngle(T)
 % Find eigenvalues of T
 [V, D] = eig(T);
 lambdas = diag(D);
-targ = find(lambdas == 1); % This is inefficient but doing it this way for simulink compatibility
+targ = find((real(lambdas) - 1) < 1E-4); % This is inefficient but doing it this way for simulink compatibility
 
 % Check for no rotation
 if(length(targ) == 3)
