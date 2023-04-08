@@ -23,8 +23,8 @@ end
 
 % Eigenvector is the rotation axis
 n = real(V(1:3,targ(1)));
-assert(norm(n) == 1);
-if(norm(imag(V(1:3),targ(1))) > 0)
+assert((norm(n) - 1) < 1E-8);
+if(norm(imag(V(1:3,targ(1)))) > 0)
     error("Imaginary Rotation Axis")
 end
 
@@ -33,7 +33,7 @@ theta = acos(0.5*trace(T) - 0.5);
 
 % Check to verify we have the right angle
 T2 = AxisAngle2DCM(theta,n);
-if(norm(T2 - T,"fro") > 0)
+if(norm(T2 - T,"fro") > norm(T2' - T,"fro"))
     theta = -1*theta;
 end
 
