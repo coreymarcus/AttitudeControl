@@ -23,8 +23,8 @@ end
 
 % Eigenvector is the rotation axis
 n = real(V(1:3,targ(1)));
-assert(norm(n) == 1);
-if(norm(imag(V(1:3),targ(1))) > 0)
+assert(abs(norm(n) - 1) < 1E-5);
+if(norm(imag(V(1:3,targ(1)))) > 0)
     error("Imaginary Rotation Axis")
 end
 
