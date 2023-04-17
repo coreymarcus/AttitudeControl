@@ -5,6 +5,8 @@ clc
 
 addpath("..\util\")
 
+getfullname(Simulink.findBlocks('midterm_sim_R2021a', 'MaskType', 'Replaced Block'))
+
 %% Problem Initalization
 
 % Gravity
