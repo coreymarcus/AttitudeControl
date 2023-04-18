@@ -4,7 +4,9 @@ function [theta,n] = DCM2AxisAngle(T)
 % Find eigenvalues of T
 [V, D] = eig(T);
 lambdas = diag(D);
+
 targ = find(abs(real(lambdas) - 1) < 1E-8); % This is inefficient but doing it this way for simulink compatibility
+
 
 % Check for no rotation
 if(length(targ) == 3)
@@ -23,7 +25,9 @@ end
 
 % Eigenvector is the rotation axis
 n = real(V(1:3,targ(1)));
+
 assert((norm(n) - 1) < 1E-8);
+
 if(norm(imag(V(1:3,targ(1)))) > 0)
     error("Imaginary Rotation Axis")
 end

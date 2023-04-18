@@ -5,6 +5,10 @@ clc
 
 addpath("..\util\")
 
+% getfullname(Simulink.findBlocks('midterm_sim_R2021a', 'MaskType', 'Replaced Block'))
+
+modelname = "simulink\midterm_sim_R2021a.slx";
+
 %% Problem Initalization
 
 % Gravity
@@ -78,26 +82,26 @@ kd_nonlin = 500000;
 %% Main
 
 use_CMG = false;
-out_no_CMG = sim("simulink\midterm_sim.slx");
+out_no_CMG = sim(modelname);
 
 use_CMG = true;
-out_w_CMG = sim("simulink\midterm_sim.slx");
+out_w_CMG = sim(modelname);
 
 %% Extract information for Part 1
 
 tout_no_CMG = out_no_CMG.tout;
-q_LVLH2body_ref = squeeze(out_no_CMG.ref_quat_LVLH);
-w_body_LVLH_ref = squeeze(out_no_CMG.ref_rate_LVLH);
-q_inertial2body_ref = squeeze(out_no_CMG.ref_quat);
-w_body_inertial_ref_no_CMG = squeeze(out_no_CMG.ref_rate);
+q_LVLH2body_ref = squeeze(out_no_CMG.ref_quat_LVLH)';
+w_body_LVLH_ref = squeeze(out_no_CMG.ref_rate_LVLH)';
+q_inertial2body_ref = squeeze(out_no_CMG.ref_quat)';
+w_body_inertial_ref_no_CMG = squeeze(out_no_CMG.ref_rate)';
 
 
 %% Extract Informatin for Part 2
 
-err_quat_no_CMG = squeeze(out_no_CMG.error_quat);
-q_inertial2body_no_CMG = squeeze(out_no_CMG.quat);
-w_body_inertial_no_CMG = squeeze(out_no_CMG.w);
-q_inertial2LVLH_no_CMG = squeeze(out_no_CMG.q_inertial2LVLH);
+err_quat_no_CMG = squeeze(out_no_CMG.error_quat)';
+q_inertial2body_no_CMG = squeeze(out_no_CMG.quat)';
+w_body_inertial_no_CMG = squeeze(out_no_CMG.w');
+q_inertial2LVLH_no_CMG = squeeze(out_no_CMG.q_inertial2LVLH)';
 
 % Find quaternion from body to LVLH
 q_LVLH2body_no_CMG = zeros(size(q_inertial2LVLH_no_CMG));
@@ -108,13 +112,13 @@ end
 %% Extract Information for Part 3
 
 tout_w_CMG = out_w_CMG.tout;
-w_body_inertial_w_CMG = squeeze(out_w_CMG.w);
-q_inertial2LVLH_w_CMG = squeeze(out_w_CMG.q_inertial2LVLH);
-q_inertial2body_w_CMG = squeeze(out_w_CMG.quat);
-CMG_rates = squeeze(out_w_CMG.CMG_rates);
-err_quat_w_CMG = squeeze(out_w_CMG.error_quat);
-w_body_inertial_ref_w_CMG = squeeze(out_w_CMG.ref_rate);
-CMG_h = squeeze(out_w_CMG.CMG_h);
+w_body_inertial_w_CMG = squeeze(out_w_CMG.w');
+q_inertial2LVLH_w_CMG = squeeze(out_w_CMG.q_inertial2LVLH)';
+q_inertial2body_w_CMG = squeeze(out_w_CMG.quat)';
+CMG_rates = squeeze(out_w_CMG.CMG_rates)';
+err_quat_w_CMG = squeeze(out_w_CMG.error_quat)';
+w_body_inertial_ref_w_CMG = squeeze(out_w_CMG.ref_rate)';
+CMG_h = squeeze(out_w_CMG.CMG_h)';
 
 % Find quaternion from body to LVLH
 q_LVLH2body_w_CMG = zeros(size(q_inertial2LVLH_no_CMG));

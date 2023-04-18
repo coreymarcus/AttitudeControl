@@ -12,3 +12,6 @@
 *.gz
 *.r2021b
 *.autosave
+*.xml
+project/slprj/sim/varcache/project_sim/checksumOfCache.mat
+project/slprj/sim/varcache/project_sim/varInfo.mat
