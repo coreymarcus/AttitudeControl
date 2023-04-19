@@ -7,10 +7,33 @@ addpath("..\util\")
 
 modelname = "simulink\project_sim.slx";
 
+%% Symbolic math for some functions
+perform_symbolic = true;
+if(perform_symbolic)
+    w_hat = sym('w_hat',[3 1],'real');
+    syms dt tau 'real'
+
+    wx = CrossProductMat(w_hat);
+    A = ExpmSkewSym(-wx*dt);
+    B = int(ExpmSkewSym(-wx*(dt - tau)),tau,0,dt);
+
+    matlabFunction(A,'File','PaPaFunc.m');
+    matlabFunction(B,'File','PaPdomegaFunc.m');
+end
+
 %% Problem Initalization
 
+Sigma_a = 1E-2*eye(3); % Measurement noise for q_inertial2body
+underweight = 10;
+
+% Process noise for filter
+Q_filter = blkdiag(1E-4*eye(3),1E-9*eye(3));
+
+% Initial uncertainty for filter
+Phat0 = 10*Q_filter;
+
 % Flight software frequency
-FSW_freq = 1/50;
+FSW_freq = 1/10;
 
 % Gravity
 mu = 398600; %km3/s2
@@ -64,6 +87,12 @@ h0 = 4881;
 % Maximum CMG rates
 rate_max = Inf*(pi/180); % Rad/sec
 
+%% Sample discrete time noise
+tsample = 0:FSW_freq:Tf_man;
+Nsample = length(tsample);
+q_meas_noise = mvnrnd(zeros(3,1),Sigma_a./underweight,Nsample);
+simin.q_meas_noise = timeseries(q_meas_noise,tsample);
+
 %% Design the maneuver in the LVLH frame
 
 % Change in quaternion
@@ -88,12 +117,18 @@ out_data = sim(modelname);
 %% Extract Information
 
 w_body_inertial = out_data.w;
+w_body_inertial_est = out_data.w_body_est;
 q_inertial2LVLH = out_data.q_inertial2LVLH;
 q_inertial2body = out_data.quat;
+q_inertial2body_est = out_data.q_inertial2body_est;
 CMG_rates = out_data.CMG_rates;
 % err_quat = squeeze(out_data.error_quat)';
 w_body_inertial_ref = out_data.ref_rate';
 CMG_h = squeeze(out_data.CMG_h)';
+
+% Squeeze for some reason
+q_inertial2body_est.Data = squeeze(q_inertial2body_est.Data)';
+w_body_inertial_est.Data = squeeze(w_body_inertial_est.Data)';
 
 % % Find quaternion from body to LVLH
 % q_LVLH2body = zeros(size(q_inertial2LVLH));
@@ -110,6 +145,31 @@ for ii = 1:3
     xlabel('Time [s]',"Interpreter","latex")
     ylabel("$\delta q$","Interpreter","latex")
     grid on
+    title("Estimated Pointing Error")
+end
+
+figure
+for ii = 1:4
+    subplot(4,1,ii)
+    hold on
+    plot(q_inertial2body.Time, q_inertial2body.Data(:,ii),"LineWidth",2)
+    plot(q_inertial2body_est.Time, q_inertial2body_est.Data(:,ii),"LineWidth",2)
+    xlabel('Time [s]',"Interpreter","latex")
+    ylabel('Quat Element',"Interpreter","latex")
+    legend("Actual","Estimate")
+    grid on
+end
+
+figure
+for ii = 1:3
+    subplot(3,1,ii)
+    hold on
+    plot(w_body_inertial.Time, w_body_inertial.Data(:,ii),"LineWidth",2)
+    plot(w_body_inertial_est.Time, w_body_inertial_est.Data(:,ii),"LineWidth",2)
+    xlabel('Time [s]',"Interpreter","latex")
+    ylabel('Angular Rate',"Interpreter","latex")
+    legend("Actual","Estimate")
+    grid on
 end
 
 figure
@@ -119,6 +179,7 @@ for ii = 1:3
     plot(w_body_inertial.Time, w_body_inertial_ref.Data(:,ii) - w_body_inertial.Data(:,ii),"LineWidth",2)
     xlabel('Time [s]',"Interpreter","latex")
     ylabel('$\delta \omega$ [rad/sec]',"Interpreter","latex")
+    legend("Actual","Estimate")
     grid on
 end
 

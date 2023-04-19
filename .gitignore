@@ -13,5 +13,5 @@
 *.r2021b
 *.autosave
 *.xml
-project/slprj/sim/varcache/project_sim/checksumOfCache.mat
-project/slprj/sim/varcache/project_sim/varInfo.mat
+project/slprj/*
+project/simulink/project_sim.slx.r2021a
