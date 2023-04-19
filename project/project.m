@@ -24,10 +24,11 @@ end
 %% Problem Initalization
 
 Sigma_a = 1E-2*eye(3); % Measurement noise for q_inertial2body
+Sigma_w = 1E-2*eye(3); % Measurement noise for body angular rate
 underweight = 10;
 
 % Process noise for filter
-Q_filter = blkdiag(1E-4*eye(3),1E-9*eye(3));
+Q_filter = blkdiag(1E-4*eye(3),1E-7*eye(3));
 
 % Initial uncertainty for filter
 Phat0 = 10*Q_filter;
@@ -91,7 +92,9 @@ rate_max = Inf*(pi/180); % Rad/sec
 tsample = 0:FSW_freq:Tf_man;
 Nsample = length(tsample);
 q_meas_noise = mvnrnd(zeros(3,1),Sigma_a./underweight,Nsample);
+w_meas_noise = 0*mvnrnd(zeros(3,1),Sigma_w./underweight,Nsample);
 simin.q_meas_noise = timeseries(q_meas_noise,tsample);
+simin.w_meas_noise = timeseries(w_meas_noise,tsample);
 
 %% Design the maneuver in the LVLH frame
 
