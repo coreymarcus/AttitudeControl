@@ -1,7 +1,7 @@
-function [qf, wf] = AttitudePropagate(q0, w0, J, dt, method)
+function [qf, wf] = AttitudePropagate(q0, w0, J, dt, method, T)
 %AttitudePropagate propagates a quaternion for time dt
 
-odefun = @(t, state) AttitudeEvolution(t,state,J,[0 0 0]');
+odefun = @(t, state) AttitudeEvolution(t,state,J,T);
 
 % ode options
 switch method

@@ -23,12 +23,19 @@ end
 
 %% Problem Initalization
 
-Sigma_a = 1E-2*eye(3); % Measurement noise for q_inertial2body
-Sigma_w = 1E-2*eye(3); % Measurement noise for body angular rate
+% Number of monte carlos
+N_MC = 100;
+
+% Noise parameters
+Sigma_a = 1E-3*eye(3); % Measurement noise for q_inertial2body
+Sigma_w = 1E-3*eye(3); % Measurement noise for body angular rate
 underweight = 10;
 
+% Actuator noise
+Sigma_act = 0*1E-4*eye(3); % Noise on torque commands to acctuator
+
 % Process noise for filter
-Q_filter = blkdiag(1E-4*eye(3),1E-7*eye(3));
+Q_filter = blkdiag(1E-7*eye(3),1E-11*eye(3));
 
 % Initial uncertainty for filter
 Phat0 = 10*Q_filter;
@@ -68,33 +75,28 @@ J = 1E-4*[24181836 3783405 3898808
 w_b_LVLH_0 = [0 0 0]'; % Initial LVLH rotation rate, rad/sec
 q_LVLH2body_0 = [0.028, -0.0788, 0.1141, 0.9899]'; % Initial attitude quaternion
 %q_LVLH2body_f = q_LVLH2body_0;
-q_LVLH2body_f = [-0.0607, -0.0343, -0.7045, 0.7062]'; % Attitude quaternion at end of the manuever
+R_change = angle2dcm(10*pi/180,10*pi/180,10*pi/180);
+q_change = DCM2Quat(R_change);
+% q_LVLH2body_f = [-0.0607, -0.0343, -0.7045, 0.7062]'; % Attitude quaternion at end of the manuever
+q_LVLH2body_f = QuatProduct(q_change,q_LVLH2body_0);
 
 % Initial pose and rate in inertial
 q_inertial2body_0 = QuatProduct(q_LVLH2body_0,q_inertial2LVLH_0);
 w_body_wrt_inertial_0 = QuatTransform(q_LVLH2body_0,w_LVLH_wrt_inertial_in_LVLH) + w_b_LVLH_0;
 
 % Final simulation time
-Tf = 2*7110;
+Tf = 200;
 % Tf = 100;
 % Tf = 10000;
 
 % Final manuever time
-Tf_man = 7110;
+Tf_man = 100;
 
 % CMG momentum
 h0 = 4881;
 
 % Maximum CMG rates
 rate_max = Inf*(pi/180); % Rad/sec
-
-%% Sample discrete time noise
-tsample = 0:FSW_freq:Tf_man;
-Nsample = length(tsample);
-q_meas_noise = mvnrnd(zeros(3,1),Sigma_a./underweight,Nsample);
-w_meas_noise = 0*mvnrnd(zeros(3,1),Sigma_w./underweight,Nsample);
-simin.q_meas_noise = timeseries(q_meas_noise,tsample);
-simin.w_meas_noise = timeseries(w_meas_noise,tsample);
 
 %% Design the maneuver in the LVLH frame
 
@@ -112,26 +114,51 @@ w_b_LVLH_man = dtheta_LVLH/Tf_man*dn_LVLH;
 kp_nonlin = 0.1;
 kd_nonlin = 1;
 
-%% Main
+%% Run MC
+out_data = cell(N_MC,1);
+for ii = 1:N_MC
 
-use_CMG = true;
-out_data = sim(modelname);
+    fprintf("MC Iteration: %d / %d \n",ii,N_MC)
 
-%% Extract Information
+    % Sample randomness
+    tsample = 0:FSW_freq:Tf;
+    Nsample = length(tsample);
+    q_meas_noise = mvnrnd(zeros(3,1),Sigma_a./underweight,Nsample);
+    w_meas_noise = mvnrnd(zeros(3,1),Sigma_w./underweight,Nsample);
+    act_noise = mvnrnd(zeros(3,1),Sigma_act,Nsample);
+    simin.act_noise = timeseries(act_noise,tsample);
+    simin.q_meas_noise = timeseries(q_meas_noise,tsample);
+    simin.w_meas_noise = timeseries(w_meas_noise,tsample);
+    init_err = mvnrnd(zeros(6,1),Phat0)';
+    dq0 = [0.5*init_err(1:3); 1];
+    dq0 = dq0/norm(dq0);
+    q_inertial2body_0_true = QuatProduct(dq0,q_inertial2body_0);
+    w_body_wrt_inertial_0_true = w_body_wrt_inertial_0 + init_err(4:6);
 
-w_body_inertial = out_data.w;
-w_body_inertial_est = out_data.w_body_est;
-q_inertial2LVLH = out_data.q_inertial2LVLH;
-q_inertial2body = out_data.quat;
-q_inertial2body_est = out_data.q_inertial2body_est;
-CMG_rates = out_data.CMG_rates;
-% err_quat = squeeze(out_data.error_quat)';
-w_body_inertial_ref = out_data.ref_rate';
-CMG_h = squeeze(out_data.CMG_h)';
+
+    % Run sim
+    out_data{ii} = sim(modelname);
+
+end
+%% Extract Information From First Run
+
+w_body_inertial = out_data{1}.w;
+w_body_inertial_est = out_data{1}.w_body_est;
+w_body_inertial_meas = out_data{1}.w_body_meas;
+q_inertial2LVLH = out_data{1}.q_inertial2LVLH;
+q_inertial2body = out_data{1}.quat;
+q_inertial2body_est = out_data{1}.q_inertial2body_est;
+q_inertial2body_meas = out_data{1}.q_inertial2body_meas;
+CMG_rates = out_data{1}.CMG_rates;
+% err_quat = squeeze(out_data{1}.error_quat)';
+w_body_inertial_ref = out_data{1}.ref_rate';
+CMG_h = squeeze(out_data{1}.CMG_h)';
 
 % Squeeze for some reason
 q_inertial2body_est.Data = squeeze(q_inertial2body_est.Data)';
 w_body_inertial_est.Data = squeeze(w_body_inertial_est.Data)';
+q_inertial2body_meas.Data = squeeze(q_inertial2body_meas.Data)';
+% w_body_inertial_meas.Data = squeeze(w_body_inertial_meas.Data)';
 
 % % Find quaternion from body to LVLH
 % q_LVLH2body = zeros(size(q_inertial2LVLH));
@@ -139,12 +166,66 @@ w_body_inertial_est.Data = squeeze(w_body_inertial_est.Data)';
 %     q_LVLH2body(:,ii) = QuatProduct(q_inertial2body(:,ii),QuatInv(q_inertial2LVLH(:,ii)));
 % end
 
+%% Extract MC Statistics
+
+% Initialize data storage
+Ntime = length(q_inertial2body_est.Time);
+est_err_quats = zeros(3,Ntime,N_MC);
+command_err_quats = zeros(3,Ntime,N_MC);
+est_err_w = zeros(3,Ntime,N_MC);
+command_err_w = zeros(3,Ntime,N_MC);
+mean_est_err_quat = zeros(3,Ntime);
+mean_command_err_quat = zeros(3,Ntime);
+var_est_err_quat = zeros(3,Ntime);
+disp_command_err_quat = zeros(3,Ntime);
+mean_est_var_quat = zeros(3,Ntime);
+mean_est_err_w = zeros(3,Ntime);
+mean_command_err_w = zeros(3,Ntime);
+var_est_err_w = zeros(3,Ntime);
+disp_command_err_w = zeros(3,Ntime);
+mean_est_var_w = zeros(3,Ntime);
+est_cov = zeros(6,6,Ntime,N_MC);
+for jj = 1:Ntime
+    for ii = 1:N_MC
+        q_est = squeeze(out_data{ii}.q_inertial2body_est.Data(:,:,jj));
+        q_true = out_data{ii}.quat.Data(jj,:)';
+        q_ref = out_data{ii}.ref_quat.Data(jj,:)';
+        q_est_err = QuatProduct(QuatInv(q_est),q_true);
+        q_com_err = QuatProduct(QuatInv(q_true),q_ref);
+        est_err_quats(:,jj,ii) = 2*q_est_err(1:3);
+        command_err_quats(:,jj,ii) = 2*q_com_err(1:3);
+
+        w_est = squeeze(out_data{ii}.w_body_est.Data(:,:,jj));
+        w_true = out_data{ii}.w.Data(jj,:)';
+        w_ref = out_data{ii}.ref_rate.Data(jj,:)';
+        est_err_w(:,jj,ii) = w_est - w_true;
+        command_err_w(:,jj,ii) = w_true - w_ref;
+        est_cov(:,:,jj,ii) = out_data{ii}.est_cov.Data(:,:,jj);
+    end
+
+    mean_est_err_quat(:,jj) = mean(squeeze(est_err_quats(:,jj,:)),2);
+    mean_est_err_w(:,jj) = mean(squeeze(est_err_w(:,jj,:)),2);
+    mean_command_err_quat(:,jj) = mean(squeeze(command_err_quats(:,jj,:)),2);
+    mean_command_err_w(:,jj) = mean(squeeze(command_err_w(:,jj,:)),2);
+
+    var_est_err_quat(:,jj) = var(squeeze(est_err_quats(:,jj,:)),0,2)';
+    var_est_err_w(:,jj) = var(squeeze(est_err_w(:,jj,:)),0,2)';
+    disp_command_err_quat(:,jj) = var(squeeze(command_err_quats(:,jj,:)),0,2)';
+    disp_command_err_w(:,jj) = var(squeeze(command_err_w(:,jj,:)),0,2)';
+
+    mean_est_var_quat(:,jj) = diag(mean(est_cov(1:3,1:3,jj,:),4));
+    mean_est_var_w(:,jj) = diag(mean(est_cov(4:6,4:6,jj,:),4));
+
+
+end
+
+
 %% Plotting Part 3
 
 figure
 for ii = 1:3
     subplot(3,1,ii)
-    plot(out_data.error_quat.Time,out_data.error_quat.Data(:,ii),"LineWidth",2)
+    plot(out_data{1}.error_quat.Time,out_data{1}.error_quat.Data(:,ii),"LineWidth",2)
     xlabel('Time [s]',"Interpreter","latex")
     ylabel("$\delta q$","Interpreter","latex")
     grid on
@@ -157,9 +238,11 @@ for ii = 1:4
     hold on
     plot(q_inertial2body.Time, q_inertial2body.Data(:,ii),"LineWidth",2)
     plot(q_inertial2body_est.Time, q_inertial2body_est.Data(:,ii),"LineWidth",2)
+%     plot(q_inertial2body_meas.Time, q_inertial2body_meas.Data(:,ii),"LineWidth",2)
     xlabel('Time [s]',"Interpreter","latex")
     ylabel('Quat Element',"Interpreter","latex")
-    legend("Actual","Estimate")
+%     legend("Actual","Estimate","Meas")
+legend("Actual",'Estimate')
     grid on
 end
 
@@ -169,8 +252,10 @@ for ii = 1:3
     hold on
     plot(w_body_inertial.Time, w_body_inertial.Data(:,ii),"LineWidth",2)
     plot(w_body_inertial_est.Time, w_body_inertial_est.Data(:,ii),"LineWidth",2)
+%     plot(w_body_inertial_meas.Time, w_body_inertial_meas.Data(:,ii),"LineWidth",2)
     xlabel('Time [s]',"Interpreter","latex")
     ylabel('Angular Rate',"Interpreter","latex")
+%     legend("Actual","Estimate","Meas")
     legend("Actual","Estimate")
     grid on
 end
@@ -182,7 +267,7 @@ for ii = 1:3
     plot(w_body_inertial.Time, w_body_inertial_ref.Data(:,ii) - w_body_inertial.Data(:,ii),"LineWidth",2)
     xlabel('Time [s]',"Interpreter","latex")
     ylabel('$\delta \omega$ [rad/sec]',"Interpreter","latex")
-    legend("Actual","Estimate")
+%     legend("Actual","Estimate")
     grid on
 end
 
@@ -211,3 +296,62 @@ for ii = 1:3
     ylabel('$|h_{CMG}|$ [kg-m\textsuperscript{2}/sec]',"Interpreter","latex")
     grid on
 end
+
+figure
+for ii = 1:3
+    subplot(3,1,ii)
+    hold on
+    plot(CMG_rates.Time,mean_est_err_quat(ii,:))
+    plot(CMG_rates.Time,sqrt(var_est_err_quat(ii,:)))
+    plot(CMG_rates.Time,sqrt(mean_est_var_quat(ii,:)))
+    title("MC Quat Estimation Performance")
+    legend("Mean Error","Est Err 1 sigma","Mean Est Cov 1 sigma")
+
+
+end
+
+figure
+for ii = 1:3
+    subplot(3,1,ii)
+    hold on
+    plot(CMG_rates.Time,mean_est_err_w(ii,:))
+    plot(CMG_rates.Time,sqrt(var_est_err_w(ii,:)))
+    plot(CMG_rates.Time,sqrt(mean_est_var_w(ii,:)))
+    title("MC Body Rate Estimation Performance")
+    legend("Mean Error","Est Err 1 sigma","Mean Est Cov 1 sigma")
+
+
+end
+
+figure
+for ii = 1:3
+    subplot(3,1,ii)
+    hold on
+    plot(CMG_rates.Time,mean_command_err_quat(ii,:))
+    plot(CMG_rates.Time,disp_command_err_quat(ii,:))
+    title("MC Quat Control Performance")
+    legend("Mean Error","Err Disp")
+
+
+end
+
+figure
+for ii = 1:3
+    subplot(3,1,ii)
+    hold on
+    plot(CMG_rates.Time,mean_command_err_w(ii,:))
+    plot(CMG_rates.Time,disp_command_err_w(ii,:))
+    title("MC Ang Rate Control Performance")
+    legend("Mean Error","Err Disp")
+end
+
+figure
+for ii = 1:3
+    subplot(3,1,ii)
+    hold on
+    for jj = 1:N_MC
+        plot(est_err_quats(ii,:,jj))
+    end
+    title("Quat Est Err Traces")
+end
+
