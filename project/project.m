@@ -108,14 +108,18 @@ rate_max = Inf*(pi/180); % Rad/sec
 
 %% Nonlinear controller design
 
-kp_nonlin = 0.1;
-kd_nonlin = 10;
+kp_nonlin = 100;
+kd_nonlin = 1000;
+
+%% Storage
+out_data = cell(N_MC,1);
 
 %% Run MC
-out_data = cell(N_MC,1);
-for ii = 1:N_MC
+
+for ii = 97:N_MC
 
     fprintf("MC Iteration: %d / %d \n",ii,N_MC)
+    rng(ii+18)
 
     % Sample randomness
     tsample = 0:FSW_freq:Tf;
@@ -156,6 +160,7 @@ for ii = 1:N_MC
 
     % Run sim
     out_data{ii} = sim(modelname);
+    save("data2.mat","out_data","-v7.3")
 
 end
 %% Extract Information From First Run
@@ -237,6 +242,8 @@ for jj = 1:Ntime
 
 end
 
+save("data2.mat","-v7.3")
+
 
 %% Plotting Part 3
 
@@ -304,6 +311,7 @@ for ii = 1:4
     grid on
 
 end
+saveas(gcf,"CMG_rates_1.pdf")
 
 figure
 for ii = 1:3
@@ -322,11 +330,14 @@ for ii = 1:3
     plot(CMG_rates.Time,mean_est_err_quat(ii,:))
     plot(CMG_rates.Time,sqrt(var_est_err_quat(ii,:)))
     plot(CMG_rates.Time,sqrt(mean_est_var_quat(ii,:)))
-    title("MC Quat Estimation Performance")
-    legend("Mean Error","Est Err 1 sigma","Mean Est Cov 1 sigma")
-
+    ylabel('$a(\delta q)_i$','Interpreter','latex')
+    xlabel('Time [sec]')
+    grid on
+    %title("MC Quat Estimation Performance")
+    legend("Mean Error","Est. Err. $1\sigma$","Mean Est. Cov. $1\sigma$",'Interpreter','latex')
 
 end
+saveas(gcf,"MC_quat_est_perf.pdf")
 
 figure
 for ii = 1:3
@@ -335,11 +346,13 @@ for ii = 1:3
     plot(CMG_rates.Time,mean_est_err_w(ii,:))
     plot(CMG_rates.Time,sqrt(var_est_err_w(ii,:)))
     plot(CMG_rates.Time,sqrt(mean_est_var_w(ii,:)))
-    title("MC Body Rate Estimation Performance")
-    legend("Mean Error","Est Err 1 sigma","Mean Est Cov 1 sigma")
-
-
+    grid on
+%     title("MC Body Rate Estimation Performance")
+    ylabel('$\omega_i - \hat{\omega}_i$ [rad/sec]','Interpreter','latex')
+    xlabel('Time [sec]')
+    legend("Mean Error","Est. Err. $1\sigma$","Mean Est. Cov. $1\sigma$",'Interpreter','latex')
 end
+saveas(gcf,"MC_rate_est_perf.pdf")
 
 figure
 for ii = 1:3
@@ -372,4 +385,32 @@ for ii = 1:3
     end
     title("Quat Est Err Traces")
 end
+
+figure
+for ii = 1:3
+    subplot(3,1,ii)
+    hold on
+    for jj = 1:N_MC
+        plot(command_err_quats(ii,:,jj))
+
+    end
+    ylabel('$a^c(\delta q)_i$','Interpreter','latex')
+    xlabel('Time [sec]')
+    grid on
+end
+saveas(gcf,"MC_quat_command_perf.pdf")
+
+figure
+for ii = 1:3
+    subplot(3,1,ii)
+    hold on
+    for jj = 1:N_MC
+        plot(command_err_w(ii,:,jj))
+
+    end
+    ylabel('$\omega^c_i - \hat{\omega}_i [rad/sec]$','Interpreter','latex')
+    xlabel('Time [sec]')
+    grid on
+end
+saveas(gcf,"MC_rate_command_perf.pdf")
 

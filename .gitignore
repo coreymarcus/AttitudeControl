@@ -16,3 +16,5 @@
 project/slprj/*
 project/simulink/project_sim.slx.r2021a
 project/latex/figs/P1Q1.pdf
+project/data.mat
+project/data2.mat
