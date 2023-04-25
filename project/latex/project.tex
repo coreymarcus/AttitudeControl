@@ -1,0 +1,59 @@
+\documentclass[]{article}
+
+\usepackage{parskip,amsmath,graphicx}
+\usepackage[margin=0.5in]{geometry}
+\usepackage[section]{placeins}
+\usepackage{pdfpages}
+
+%opening
+\title{Final Project - ASE 389P.8 Satellite Control Systems}
+\author{Corey Marcus}
+
+\begin{document}
+
+\maketitle
+
+\newcommand{\CrossProd}[1]{\left[ #1 \times \right]}
+
+\section{Introduction}
+
+An eccentric billionaire has built his own space station. To save on design costs, his station is an exact replica of the ISS. He does not intend to share it with anyone, so it was scaled down in size such that its inertia matrix is smaller than that of the ISS by a factor of 1E-4. However, he demanded the station be as fast and nimble as his companies (he is a disruptor). The station's CMGs have the performance as the full size ISS. Super cooled bearings made of unobtainium mean there is no limit on how fast the gimbals can spin. 
+
+\section{Attitude Dynamics and Kinematics}
+
+The station lives in an equatorial 400km circular orbit. Its attitude is perturbed by gravity gradient.
+
+\section{Reference Attitude}
+
+The station is generally prescribed to remain fixed with respect to the LVLH frame. It begins with a nominal quaternion DATA and angular rate with respect to the LVLH frame DATA. Through the course of a 100 run Monte Carlo (MC), the nominal quaternion and angular rate are dispersed using zero-mean gaussian noise with covariance DATA.
+
+The station is commanded to rotate to DATA with respect to the LVLH frame and then remain fixed. The reference rotation is designed as a constant angular rate euler-axis rotation.
+
+FIGURE shows the dispersion of true attitudes, FIGURE shows the dispersion of true angular rates. FIGURES show the estimated command errors, or difference between the estimated pose and desired pose.
+
+\section{Actuators}
+
+The station's actuators are CMGs which are exact replicas of those on the ISS. They have been upgraded to support infinite gimbal rotation rates. Our billionaire decided that electro-magnetic shielding on many critical components was unnecessary. This has a negative effect of introducing noise on the commanded torque for the CMGs. This is modeled as zero-mean Gaussian noise with covariance DATA.
+
+\section{Sensors}
+
+The station's sensors include a gyroscope and star tracker. Neither sensor contains a bias and their true alignment is known. Both measurements occur at DATA Hz and are corrupted by zero-mean Gaussian noise. The noise covariance is DATA and DATA. 
+
+\section{MEKF}
+
+The vehicle's true position and velocity are known. But it must use an MEKF to estimate its inertial to body attitude and angular rates. Both gyroscope and star tracker measurements are fused into the state during the update portion. The vehicle state is propagated using the torque command. We model process noise with covariance DATA.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\linewidth,trim={4cm, 8cm, 4cm, 8cm},clip]{figs/P1Q1.pdf}
+	\caption{The nominal LVLH to body angular rates. We begin with a constant rate maneuver, followed by a LVLH hold.}
+	\label{fig:P1Q1}
+\end{figure}
+
+
+\section{Code}
+
+%\includepdf[pages=-,pagecommand={},width=\textwidth]{code_main.pdf}
+%\includepdf[pages=-,pagecommand={},width=\textwidth]{../simulink/code_doc.pdf}
+
+\end{document}

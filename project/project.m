@@ -3,9 +3,9 @@ clear
 close all
 clc
 
-addpath("..\util\")
+addpath("..\util\","..\..\matlabScripts")
 
-modelname = "simulink\project_sim.slx";
+modelname = 'project_sim';
 
 %% Symbolic math for some functions
 perform_symbolic = true;
@@ -29,16 +29,26 @@ N_MC = 100;
 % Noise parameters
 Sigma_a = 1E-3*eye(3); % Measurement noise for q_inertial2body
 Sigma_w = 1E-3*eye(3); % Measurement noise for body angular rate
-underweight = 10;
+underweight = 0.5;
+
+% Initial state dispersion parameters
+Disp_a = 1E-2*eye(3);
+Disp_w = 1E-3*eye(3);
+
+% Vehicle inertia matrix
+J = 1E-4*[24181836 3783405 3898808
+    3783405 37621803 -1171849
+    3898808 -1171849 51576634];
 
 % Actuator noise
-Sigma_act = 0*1E-4*eye(3); % Noise on torque commands to acctuator
+Sigma_act = 1E-6*eye(3); % Noise on torque commands to acctuator
+w_noise_scale = max(J\diag(Sigma_act));
 
 % Process noise for filter
-Q_filter = blkdiag(1E-7*eye(3),1E-11*eye(3));
+Q_filter = blkdiag(1E-8*eye(3),0.1*w_noise_scale*eye(3));
 
 % Initial uncertainty for filter
-Phat0 = 10*Q_filter;
+Phat0 = blkdiag(1E-3*eye(3),1E-4*eye(3));
 
 % Flight software frequency
 FSW_freq = 1/10;
@@ -69,13 +79,10 @@ T_inertial2LVLH_0 = [x_LVLH_inertial_0'; y_LVLH_inertial_0'; z_LVLH_inertial_0']
 q_inertial2LVLH_0 = DCM2Quat(T_inertial2LVLH_0);
 
 % Rotation formulations
-J = 1E-4*[24181836 3783405 3898808
-    3783405 37621803 -1171849
-    3898808 -1171849 51576634];
 w_b_LVLH_0 = [0 0 0]'; % Initial LVLH rotation rate, rad/sec
 q_LVLH2body_0 = [0.028, -0.0788, 0.1141, 0.9899]'; % Initial attitude quaternion
 %q_LVLH2body_f = q_LVLH2body_0;
-R_change = angle2dcm(10*pi/180,10*pi/180,10*pi/180);
+R_change = angle2dcm(3*pi/180,3*pi/180,3*pi/180);
 q_change = DCM2Quat(R_change);
 % q_LVLH2body_f = [-0.0607, -0.0343, -0.7045, 0.7062]'; % Attitude quaternion at end of the manuever
 q_LVLH2body_f = QuatProduct(q_change,q_LVLH2body_0);
@@ -85,12 +92,12 @@ q_inertial2body_0 = QuatProduct(q_LVLH2body_0,q_inertial2LVLH_0);
 w_body_wrt_inertial_0 = QuatTransform(q_LVLH2body_0,w_LVLH_wrt_inertial_in_LVLH) + w_b_LVLH_0;
 
 % Final simulation time
-Tf = 200;
+Tf = 400;
 % Tf = 100;
 % Tf = 10000;
 
 % Final manuever time
-Tf_man = 100;
+Tf_man = 200;
 
 % CMG momentum
 h0 = 4881;
@@ -98,21 +105,11 @@ h0 = 4881;
 % Maximum CMG rates
 rate_max = Inf*(pi/180); % Rad/sec
 
-%% Design the maneuver in the LVLH frame
-
-% Change in quaternion
-dq_LVLH = QuatProduct(q_LVLH2body_f,QuatInv(q_LVLH2body_0));
-
-% Euler axis and angle change
-[dtheta_LVLH, dn_LVLH] = Quat2AxisAngle(dq_LVLH);
-
-% Find angular rate in rad/sec
-w_b_LVLH_man = dtheta_LVLH/Tf_man*dn_LVLH;
 
 %% Nonlinear controller design
 
 kp_nonlin = 0.1;
-kd_nonlin = 1;
+kd_nonlin = 10;
 
 %% Run MC
 out_data = cell(N_MC,1);
@@ -123,18 +120,39 @@ for ii = 1:N_MC
     % Sample randomness
     tsample = 0:FSW_freq:Tf;
     Nsample = length(tsample);
-    q_meas_noise = mvnrnd(zeros(3,1),Sigma_a./underweight,Nsample);
-    w_meas_noise = mvnrnd(zeros(3,1),Sigma_w./underweight,Nsample);
+    q_meas_noise = mvnrnd(zeros(3,1),Sigma_a,Nsample);
+    w_meas_noise = mvnrnd(zeros(3,1),Sigma_w,Nsample);
     act_noise = mvnrnd(zeros(3,1),Sigma_act,Nsample);
+    simin = [];
     simin.act_noise = timeseries(act_noise,tsample);
     simin.q_meas_noise = timeseries(q_meas_noise,tsample);
     simin.w_meas_noise = timeseries(w_meas_noise,tsample);
     init_err = mvnrnd(zeros(6,1),Phat0)';
     dq0 = [0.5*init_err(1:3); 1];
     dq0 = dq0/norm(dq0);
-    q_inertial2body_0_true = QuatProduct(dq0,q_inertial2body_0);
-    w_body_wrt_inertial_0_true = w_body_wrt_inertial_0 + init_err(4:6);
 
+    init_disp = mvnrnd(zeros(6,1),blkdiag(Disp_a,Disp_w))';
+    dq0_disp = [0.5*init_disp(1:3); 1];
+    dq0_disp = dq0_disp/norm(dq0_disp);
+
+    % Disperse true initial state
+    q_inertial2body_0_est = QuatProduct(dq0_disp,q_inertial2body_0);
+    w_body_wrt_inertial_0_est = w_body_wrt_inertial_0 + init_disp(4:6);
+    q_LVLH2body_0_est = QuatProduct(q_inertial2body_0_est,QuatInv(q_inertial2LVLH_0));
+
+    % Corrupt initial state certainty
+    q_inertial2body_0_true = QuatProduct(dq0,q_inertial2body_0_est);
+    w_body_wrt_inertial_0_true = w_body_wrt_inertial_0_est + init_err(4:6);
+
+    % Design the maneuver in the LVLH frame
+    % Change in quaternion
+    dq_LVLH = QuatProduct(q_LVLH2body_f,QuatInv(q_inertial2body_0_est));
+
+    % Euler axis and angle change
+    [dtheta_LVLH, dn_LVLH] = Quat2AxisAngle(dq_LVLH);
+
+    % Find angular rate in rad/sec
+    w_b_LVLH_man = dtheta_LVLH/Tf_man*dn_LVLH;
 
     % Run sim
     out_data{ii} = sim(modelname);
