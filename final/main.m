@@ -40,7 +40,9 @@ gyro_ARW = 0.15; % deg/sqrt(hour)
 bias_inst = 0.3; % deg/hour
 
 % Initial estimate uncertainty
-Phat0 = blkdiag(1E-3*eye(3),1E-10*eye(3));
+var_bias0 = (1*(pi/180)*(1/3600))^2; % ([deg/hour]*[rad/deg]*[hour/sec])^2
+var_att0 = (1*(pi/180))^2; %([deg]*[rad/deg])^2
+Phat0 = blkdiag(var_att0*eye(3),var_bias0*eye(3));
 
 %% Main
 
@@ -95,7 +97,7 @@ for ii = 2:Nt
     % Propagate truth
     state_f = PropagateTwoBody(state_hist_true(:,ii - 1), dt, J, [0 0 0]',"TwoBodyNoAttitude");
     state_hist_true(:,ii) = state_f;
-    bias_hist_true(:,ii) = bias_hist_true(:,ii-1) + 0*nu_bias(:,ii-1);
+    bias_hist_true(:,ii) = bias_hist_true(:,ii-1) + nu_bias(:,ii-1);
 
     % Generate measurements
     gyro_meas(:,ii) = bias_hist_true(:,ii) + nu_gyro(:,ii);
@@ -129,6 +131,8 @@ for ii = 2:Nt
 
     q_est_err(:,ii) = 2*q_est(1:3,ii);
 end
+
+bias_est_err = bias_est - bias_hist_true;
 
 
 %% Plotting
@@ -176,10 +180,24 @@ figure
 for ii = 1:3
     subplot(3,1,ii)
     hold on
-    plot(t,q_est_err(ii,:))
-    plot(t,3*sqrt(squeeze(Phat(ii,ii,:))))
-    plot(t,-3*sqrt(squeeze(Phat(ii,ii,:))))
+    plot(t,q_est_err(ii,:),"r")
+    plot(t,1*sqrt(squeeze(Phat(ii,ii,:))),"k")
+    plot(t,-1*sqrt(squeeze(Phat(ii,ii,:))),"k")
     title("Quat Est Error")
     xlabel("Time [sec]")
-    ylabel("Quat Element")
+    ylabel("Quat Param. Element [rad]")
+    legend("Error","Estimate $1\sigma$ Interval")
+end
+
+figure
+for ii = 1:3
+    subplot(3,1,ii)
+    hold on
+    plot(t,bias_est_err(ii,:),"r")
+    plot(t,1*sqrt(squeeze(Phat(ii+3,ii+3,:))),"k")
+    plot(t,-1*sqrt(squeeze(Phat(ii+3,ii+3,:))),"k")
+    title("Bias Est Error")
+    xlabel("Time [sec]")
+    ylabel("Bias Element Error [rad/sec]")
+    legend("Error","Estimate $1\sigma$ Interval")
 end
