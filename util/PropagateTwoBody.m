@@ -5,6 +5,8 @@ function [state_f] = PropagateTwoBody(state_0, dt, J, T, dynamics)
 
 % Construct function for ode45
 switch dynamics
+    case "TwoBodyNoAttitude"
+        odefun = @(t, state) [TwoBodyGrav(t, state(1:6)); zeros(7,1)];
     case "TwoBody"
         odefun = @(t, state) [TwoBodyGrav(t, state(1:6)); AttitudeEvolution(t,state(7:13),J,T)];
     case "TwoBodyAndGG"
