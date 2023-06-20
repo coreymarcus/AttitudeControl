@@ -56,7 +56,7 @@ if v'*r >= 0
 elseif v'*r < 0
     theta = 360 - acosd(ehat'*rhat); %Q2 or Q3
 else
-    disp('ERROR!!!')
+    error("Invalid v'*r")
 end
 end
 
