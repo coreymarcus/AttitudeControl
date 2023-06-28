@@ -15,9 +15,13 @@ Beval = PaPdomegaFunc(dt,...
     w_bar(1),...
     w_bar(2),...
     w_bar(3)+1E-10); % Add very small peturbation to prevent divide by zero
-F = [ Aeval, -eye(3);
+% F = [ Aeval, -eye(3);
+%     zeros(3), eye(3)];
+% G = [Beval;
+%     zeros(3)];
+F = [ Aeval, -Beval;
     zeros(3), eye(3)];
-G = [Beval;
+G = [-Beval;
     zeros(3)];
 Pbar = F*Phat0*F' + G*Q_w*G' + blkdiag(zeros(3),Q_b);
 bias_bar = bias0;
