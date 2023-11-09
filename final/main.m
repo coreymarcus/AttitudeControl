@@ -10,7 +10,7 @@ rng(4)
 
 % Rotation formulations
 J = blkdiag(1, 1, 1); % Inertia matrix
-w_b_0 = [0 0 0]'; % Initial rotation rate, rad/sec
+w_b_0 = [.1 .1 .1]'; % Initial rotation rate, rad/sec
 q_inertial2body_0 = [0 0 0 1]'; % Initial attitude quaternion
 
 % Orbital elements
@@ -24,7 +24,7 @@ mu = 398600; %km3/s2
 
 % Final time
 Tp = 2*pi*sqrt(a^3/mu);
-Tf = 8*Tp;
+Tf = .1*Tp;
 
 % Propagation timestep
 dt = 1;
@@ -95,12 +95,12 @@ nu_mag = mvnrnd(zeros(1,3),Sigma_mag,Nt)';
 for ii = 2:Nt
 
     % Propagate truth
-    state_f = PropagateTwoBody(state_hist_true(:,ii - 1), dt, J, [0 0 0]',"TwoBodyNoAttitude");
+    state_f = PropagateTwoBody(state_hist_true(:,ii - 1), dt, J, [0 0 0]',"TwoBody");
     state_hist_true(:,ii) = state_f;
     bias_hist_true(:,ii) = bias_hist_true(:,ii-1) + nu_bias(:,ii-1);
 
     % Generate measurements
-    gyro_meas(:,ii) = bias_hist_true(:,ii) + nu_gyro(:,ii);
+    gyro_meas(:,ii) = state_hist_true(11:13,ii) + bias_hist_true(:,ii) + nu_gyro(:,ii);
     B_inertial = DipoleMagneticField(state_f(1:3)');
     B_body = NativeQuatTransform(q_inertial2body_0,B_inertial);
     B_meas(:,ii) = B_body + nu_mag(:,ii);
@@ -129,7 +129,8 @@ for ii = 2:Nt
 %         J,...
 %         state_hist_true(1:3,ii));
 
-    q_est_err(:,ii) = 2*q_est(1:3,ii);
+    dq = QuatProduct(QuatInv(state_hist_true(7:10,ii)),q_est(:,ii));
+    q_est_err(:,ii) = 2*dq(1:3);
 end
 
 bias_est_err = bias_est - bias_hist_true;
